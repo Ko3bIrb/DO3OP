@@ -1,0 +1,54 @@
+name: Godot · Windows preview
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'godot/**'
+      - '.github/workflows/godot-windows.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GODOT_VERSION: '4.6.3'
+      XDG_DATA_HOME: /tmp/do3op-godot/data
+      XDG_CONFIG_HOME: /tmp/do3op-godot/config
+      XDG_CACHE_HOME: /tmp/do3op-godot/cache
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install official Godot and Windows export template
+        shell: bash
+        run: |
+          set -euo pipefail
+          release="https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable"
+          curl --fail --location --retry 3 "$release/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip" -o "$RUNNER_TEMP/godot.zip"
+          unzip -q "$RUNNER_TEMP/godot.zip" -d "$RUNNER_TEMP/godot-bin"
+          chmod +x "$RUNNER_TEMP/godot-bin/Godot_v${GODOT_VERSION}-stable_linux.x86_64"
+          echo "$RUNNER_TEMP/godot-bin" >> "$GITHUB_PATH"
+          curl --fail --location --retry 3 "$release/Godot_v${GODOT_VERSION}-stable_export_templates.tpz" -o "$RUNNER_TEMP/templates.tpz"
+          template_dir="$XDG_DATA_HOME/godot/export_templates/${GODOT_VERSION}.stable"
+          mkdir -p "$template_dir"
+          unzip -q -j "$RUNNER_TEMP/templates.tpz" 'templates/windows_release_x86_64.exe' 'templates/version.txt' -d "$template_dir"
+      - name: Import and export native Windows game
+        shell: bash
+        run: |
+          set -euo pipefail
+          engine="Godot_v${GODOT_VERSION}-stable_linux.x86_64"
+          "$engine" --headless --path godot --editor --import --quit
+          mkdir -p godot/build/windows
+          "$engine" --headless --path godot --export-release "Windows Desktop"
+          cp godot/LICENSE-GODOT.txt godot/build/windows/
+          cp godot/assets/fonts/LICENSE.txt godot/build/windows/LICENSE-FONTS.txt
+          cp godot/README.md godot/build/windows/README.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NightWatch-Windows-x64
+          path: godot/build/windows/
+          if-no-files-found: error
+          retention-days: 14

@@ -1,0 +1,10 @@
+.godot/
+build/
+tools/node_modules/
+export_credentials.cfg
+
+# Textures extracted by the editor; GLB embeds the authoritative originals.
+assets/models/*.png
+assets/models/*.png.import
+
+__pycache__/

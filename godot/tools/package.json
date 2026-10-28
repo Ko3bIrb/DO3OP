@@ -1,0 +1,5 @@
+{
+  "private": true,
+  "description": "Optional development tools for regenerating source-compatible game assets",
+  "dependencies": { "@napi-rs/canvas": "0.1.100" }
+}

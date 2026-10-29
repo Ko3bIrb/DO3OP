@@ -10,7 +10,7 @@ void fragment(){
  float grain=n(world.xz*2.)*.03+n(world.xz*.16)*.08;
  if(winter){
   float coat=smoothstep(.40,.74,normalize(slope).y+(n(world.xz*.24)-.5)*.1)*smoothstep(-1.0,.25,world.y);
-  ALBEDO=mix(vec3(.15,.20,.24)+grain,vec3(.58,.68,.74)+grain*.4,coat);
+  ALBEDO=mix(vec3(.055,.09,.14)+grain,vec3(.25,.38,.52)+grain*.35,coat);
   ROUGHNESS=mix(.75,.96,coat);METALLIC=.03;
  }else{
   float cracks=1.-smoothstep(.01,.045,abs(n(world.xz*.85)-.5));

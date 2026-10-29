@@ -41,7 +41,7 @@ func configure(scene: Node3D, id: String) -> void:
  settings.sky = sky
  settings.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
  settings.ambient_light_color = Color("8197b9") if winter else Color("bd5731")
- settings.ambient_light_energy = 0.30 if winter else 0.24
+ settings.ambient_light_energy = 0.22 if winter else 0.24
  settings.reflected_light_source = 1
  settings.tonemap_mode = Environment.TONE_MAPPER_AGX
  settings.tonemap_exposure = 0.95
@@ -55,7 +55,7 @@ func configure(scene: Node3D, id: String) -> void:
  settings.glow_bloom = 0.03
  settings.glow_hdr_threshold = 1.5
  settings.fog_enabled = true
- settings.fog_light_color = Color("465c7b") if winter else Color("63301c")
+ settings.fog_light_color = Color("1b2b54") if winter else Color("63301c")
  settings.fog_density = 0.0009 if not _menu else 0.007
  settings.fog_sun_scatter = 0.12
  settings.volumetric_fog_enabled = false
@@ -66,8 +66,8 @@ func configure(scene: Node3D, id: String) -> void:
  scene.add_child(environment)
  var moon = DirectionalLight3D.new()
  moon.name = "Moonlight"
- moon.light_color = Color("bfd6f3") if winter else Color("e78c54")
- moon.light_energy = 0.46 if winter else 0.34
+ moon.light_color = Color("6685bd") if winter else Color("e78c54")
+ moon.light_energy = 0.34 if winter else 0.34
  moon.rotation_degrees = Vector3(-38, -32, 0)
  moon.shadow_enabled = true
  moon.light_angular_distance = 2.0
@@ -77,7 +77,7 @@ func configure(scene: Node3D, id: String) -> void:
  var rim = DirectionalLight3D.new()
  rim.rotation_degrees = Vector3(-23, 145, 0)
  rim.light_color = Color("d4ad92") if winter else Color("ee4822")
- rim.light_energy = 0.14
+ rim.light_energy = 0.08
  scene.add_child(rim)
  if _menu:
   _light(scene, Vector3(3.4, 1.0, 1.8), Color("ffb367"), 5.0, 9, true)

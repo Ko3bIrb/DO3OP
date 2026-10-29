@@ -526,7 +526,7 @@ def enemy(kind,d):
 def fir(p,height=6,snow=True):
  x,y,z=p;tube('Fir trunk',(x,y,z),(x,y+height,z),height*.035,WOOD,r2=.015,verts=10)
  for layer in range(7):
-  yy=y+height*(.16+layer*.098);radius=height*(.30-layer*.035)
+  yy=y+height*(.14+layer*.115);radius=height*(.32-layer*.040)
   for branch in range(6):
    angle=branch*math.tau/6+layer*.43+random.uniform(-.15,.15)
    forward=Vector((math.cos(angle),0,math.sin(angle)))
@@ -546,7 +546,8 @@ def fir(p,height=6,snow=True):
      mesh('Fir needles',verts,faces,PINE,smooth=True)
      if snow and segment%2==0:
       curve('Snow on bough',[at+Vector((0,height*.012,0)),at.lerp(end,.55)+Vector((0,height*.016,0)),end],height*.015,SNOW)
- tube('Fir leader',(x,y+height*.84,z),(x,y+height*1.02,z),height*.035,PINE,r2=0,verts=8)
+ ell('Fir crown',(x,y+height*.86,z),(height*.16,height*.22,height*.16),PINE,seg=12)
+ tube('Fir leader',(x,y+height*.86,z),(x,y+height*1.02,z),height*.025,PINE,r2=.006,verts=8)
 
 def rock(p,size=2,ice=False):
  bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2,radius=1,location=V(p));o=bpy.context.object

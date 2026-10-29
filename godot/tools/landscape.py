@@ -74,16 +74,35 @@ def build_landscape(c,mapid):
  mesh('Carved landscape',verts,terrain_faces,terrainmat,smooth=True)
  # Visible water/lava basins. Holes retain the sniper islands and shore ledges.
  def basin_surface():
-  vv=[];ff=[];nx,nz=(65,121) if ice else (151,121)
-  for j in range(nz):
-   z=(-43+j*67/(nz-1)) if ice else (-78+j*133/(nz-1))
-   for i in range(nx):vv.append(((-20+i*40/(nx-1)) if ice else (-96+i*192/(nx-1)),-1.05,z))
-  for j in range(nz-1):
-   for i in range(nx-1):
-    k=j*nx+i;ids=(k,k+nx,k+nx+1,k+1)
-    if not ice or min(bay(vv[v][0],vv[v][2]) for v in ids)<1.5 or (ice and all(abs(vv[v][0])<7.0 and 10.0<vv[v][2]<20.0 for v in ids)):ff.append(ids)
+  # Smooth polygonal water bodies avoid the square grid edges of the old clipped mesh.
+  vv=[];ff=[]
+  def ellipse(cx,cz,rx,rz,segments=96,y=-1.05):
+   base=len(vv);vv.append((cx,y,cz))
+   for k in range(segments):
+    ang=math.tau*k/segments;vv.append((cx+math.cos(ang)*rx,y,cz+math.sin(ang)*rz))
+   for k in range(segments):ff.append((base,base+1+k,base+1+(k+1)%segments))
+  def ribbon(points,widths,y=-1.05):
+   base=len(vv)
+   for i,p in enumerate(points):
+    tangent=(points[min(i+1,len(points)-1)]-points[max(0,i-1)]).normalized();normal=Vector((-tangent.z,0,tangent.x));w=widths[i]
+    vv.extend([(p.x+normal.x*w,y,p.z+normal.z*w),(p.x-normal.x*w,y,p.z-normal.z*w)])
+   for i in range(len(points)-1):
+    k=base+i*2;ff.append((k,k+2,k+3,k+1))
+  if ice:
+   ellipse(0,-19,14.8,21.0,128)
+   ellipse(0,9,2.7,17.0,80)
+   ellipse(-8,26,9.2,7.8,96)
+   pts=[]
+   for i in range(25):
+    t=i/24;pts.append(Vector((-1.5-6.5*t+0.35*math.sin(t*math.tau),-1.05,10+16*t)))
+   ribbon(pts,[2.5+2.5*math.sin(math.pi*t) for t in [i/24 for i in range(25)]])
+  else:
+   ellipse(-3,3,43,35,160)
+   ellipse(18,-25,15,13,80)
+   ellipse(-30,25,13,10,72)
   mesh('Central bay' if ice else 'Molten basin',vv,ff,water if ice else magma,smooth=True)
  basin_surface()
+
  # A stepped rock lip breaks the waterfall into several unequal falling streams.
  if ice:
   for strand,(cx,width,top,bottom,phase) in enumerate([(-1.2,1.05,-46.8,-33.2,.0),(.9,.7,-46.1,-32.4,1.5),(2.0,.38,-44.8,-33.8,3.2)]):
@@ -229,16 +248,20 @@ def build_landscape(c,mapid):
    a=i*math.tau/64;vv.append((-12+math.cos(a)*4.5,26+math.sin(a*5)*.15,-53+math.sin(a)*3.4))
   mesh('Glowing volcanic crater',vv,[(0,i+2,i+1) for i in range(64)],magma)
   meta['fires'].append([-12,27,-53])
-  # A broad infernal bridge carries the route over the lava sea; its arches are readable from the game camera.
-  for j in range(18):
-   xx=-45+j*.58
-   box('Infernal bridge deck',(xx,1.4,-7.0),(.62,.28,4.4),stone,bevel=.07)
+  # One broad basalt causeway follows the route through the lava field.
+  cause=[Vector(v) for v in [route[1],route[2],route[3],route[4]]]
+  for i in range(len(cause)-1):
+   aa,bb=cause[i],cause[i+1];length=max(2,int((bb-aa).length/.65))
+   for j in range(length):
+    t=j/length;pp=aa.lerp(bb,t);tangent=(bb-aa).normalized();normal=Vector((-tangent.z,0,tangent.x))
+    box('Infernal causeway slab',(pp.x,1.0,pp.z),(1.0,.30,4.0),stone,bevel=.08)
+    if j%5==0:
+     for side in [-1,1]:
+      at=pp+normal*side*2.15
+      tube('Causeway parapet', (at.x,1.0,at.z),(at.x,3.0,at.z),.22,stone,r2=.10,verts=10)
+      meta['fires'].append([at.x,3.1,at.z])
   for side in [-1,1]:
-   curve('Infernal bridge arch',[(-45,1.2,-7+side*1.9),(-40,-3.0,-7+side*1.9),(-35,1.2,-7+side*1.9)],.48,stone)
-   box('Infernal bridge parapet',(-40,2.2,-7+side*2.12),(11,.9,.34),stone,bevel=.08)
-  for xx in [-44,-40,-36]:
-   tube('Infernal bridge brazier', (xx,1.8,-9.8),(xx,3.0,-9.8),.24,basalt,verts=10)
-   meta['fires'].append([xx,3.0,-9.8])
+   curve('Causeway arch',[(-32,1.0,-13+side*2.1),(-24,-4.0,-14+side*2.1),(-17,1.0,-7+side*2.1)],.52,stone)
  c['fortress'](route[-1],ice)
  # The enemy source is a fortress with an open, illuminated gate facing the road.
  x,y,z=route[0];wall=c['ICE'] if ice else basalt;glow=c['FROST'] if ice else c['EMBER']

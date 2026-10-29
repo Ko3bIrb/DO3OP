@@ -546,8 +546,7 @@ def fir(p,height=6,snow=True):
      mesh('Fir needles',verts,faces,PINE,smooth=True)
      if snow and segment%2==0:
       curve('Snow on bough',[at+Vector((0,height*.012,0)),at.lerp(end,.55)+Vector((0,height*.016,0)),end],height*.015,SNOW)
- ell('Fir crown',(x,y+height*.86,z),(height*.16,height*.22,height*.16),PINE,seg=12)
- tube('Fir leader',(x,y+height*.86,z),(x,y+height*1.02,z),height*.025,PINE,r2=.006,verts=8)
+ tube('Fir tapered crown',(x,y+height*.78,z),(x,y+height*1.02,z),height*.075,PINE,r2=.008,verts=7)
 
 def rock(p,size=2,ice=False):
  bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2,radius=1,location=V(p));o=bpy.context.object
@@ -632,7 +631,7 @@ if mode in ['all','characters']:
 if mode in ['all','worlds','terrain']:
  from landscape import build_props
  if mode!='terrain':build_props(globals())
- for mapid in ['ice','hell']:world(mapid)
+ for mapid in ['ice']:world(mapid)
 if mode in ['all','menu']:menu()
 manifest={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(OUT.glob('*.glb'))}
 (R/'data/asset_manifest.json').write_text(json.dumps({'generator':'Blender build_art.py','files':manifest},indent=2)+'\n')

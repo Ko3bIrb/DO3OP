@@ -1,7 +1,7 @@
 extends RefCounted
 
 const PATH = "user://progress.json"
-var data: Dictionary = {"best_waves": {}, "stars": {}, "total_kills": 0, "total_waves": 0, "audio_enabled": true, "difficulty": {"hell": "easy", "ice": "easy"}, "selected_map": "hell"}
+var data: Dictionary = {"best_waves": {}, "stars": {}, "total_kills": 0, "total_waves": 0, "audio_enabled": true, "difficulty": {"ice": "easy"}, "selected_map": "ice"}
 
 func _init() -> void:
 	var source = PATH
@@ -11,6 +11,8 @@ func _init() -> void:
 		var loaded = JSON.parse_string(FileAccess.get_file_as_string(source))
 		if loaded is Dictionary:
 			data.merge(loaded, true)
+	if data.get("selected_map", "ice") != "ice": data.selected_map = "ice"
+	data.difficulty.erase("hell")
 
 func save() -> void:
 	var file = FileAccess.open(PATH + ".tmp", FileAccess.WRITE)

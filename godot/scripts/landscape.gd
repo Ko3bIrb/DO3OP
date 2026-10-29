@@ -62,7 +62,7 @@ func configure(scene: Node3D, id: String) -> void:
  for p in data.fires:
   var fire=MeshInstance3D.new()
   fire.mesh=QuadMesh.new()
-  fire.mesh.size=Vector2(1.8,2.8) if id=="hell" else Vector2(.9,1.4)
+  fire.mesh.size=Vector2(.9,1.4)
   fire.material_override=flame_material
   fire.position=Vector3(p[0],p[1]+fire.mesh.size.y*.43,p[2])
   fire.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF

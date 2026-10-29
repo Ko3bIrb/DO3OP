@@ -9,7 +9,7 @@ signal effect(event: Dictionary)
 signal wave_started
 signal completed(won: bool)
 
-var map_id = "hell"
+var map_id = "ice"
 var map: Dictionary
 var difficulty: Dictionary
 var hp = 20

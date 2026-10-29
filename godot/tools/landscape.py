@@ -206,6 +206,15 @@ def build_landscape(c,mapid):
     meta.setdefault('lanterns',[]).append([x,2,z])
   for i in range(25):
    x=-6.0+i*.5;box('Bridge paving',(x,.055,15),(.51,.19,3.8),stone,bevel=.04)
+  # A single road-colored ribbon ties both curved approaches into the bridge deck.
+  bridge_path=[Vector((-6,0,13.0)),Vector((-5,0,14.2)),Vector((-4,0,15.0)),Vector((4,0,15.0)),Vector((5,0,14.2)),Vector((6,0,13.0))]
+  bridge_v=[];bridge_f=[]
+  for i,pp in enumerate(bridge_path):
+   tangent=(bridge_path[min(i+1,len(bridge_path)-1)]-bridge_path[max(0,i-1)]).normalized();normal=Vector((-tangent.z,0,tangent.x));w=1.82
+   bridge_v.extend([pp+normal*w+Vector((0,.18,0)),pp-normal*w+Vector((0,.18,0))])
+  for i in range(len(bridge_path)-1):
+   k=i*2;bridge_f.append((k,k+2,k+3,k+1))
+  mesh('Bridge road connection',bridge_v,bridge_f,roadmat,smooth=True)
   for side in [-1,1]:
    curve('Bridge arch',[(-6,0,15+side*1.8),(-3,-1.2,15+side*1.8),(0,-1.8,15+side*1.8),(3,-1.2,15+side*1.8),(6,0,15+side*1.8)],.38,stone)
    box('Bridge parapet',(0,.6,15+side*1.94),(12.8,.8,.35),stone,bevel=.1)

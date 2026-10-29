@@ -7,7 +7,7 @@ const Sound = preload("res://scripts/sound.gd")
 const CombatFX = preload("res://scripts/combat_fx.gd")
 const Landscape = preload("res://scripts/landscape.gd")
 const Atmosphere = preload("res://scripts/atmosphere.gd")
-const MAP_IMAGES = {"hell":preload("res://assets/map_hell.png"),"ice":preload("res://assets/map_ice.png")}
+const MAP_IMAGES = {"ice":preload("res://assets/map_ice.png")}
 const TYPES = ["gun", "sniper", "mortar", "slow", "skyguard", "amp"]
 
 var save_store = SaveStore.new()
@@ -35,6 +35,8 @@ var audio_button: Button
 var speed_slider: HSlider
 var speed_value: Label
 var tactical_button: Button
+var fps_label: Label
+var _fps_elapsed = 0.0
 var _hud_visibility: Dictionary = {}
 var _spatial_overlay_visibility: Dictionary = {}
 var _pause_menu_open = false
@@ -114,7 +116,7 @@ func _ready() -> void:
 func _demo() -> void:
 	while _loading: await get_tree().process_frame
 	if sim == null:
-		await start_game("hell", "easy")
+		await start_game("ice", "easy")
 	sim.coins = 3000
 	for i in range(min(8, sim.spots.size())):
 		sim.build("sniper" if sim.spots[i].restricted_to != "" else TYPES[i % 6] if TYPES[i % 6] != "sniper" else "gun", i)
@@ -342,7 +344,7 @@ func _show_maps() -> void:
 	var cards = HBoxContainer.new()
 	cards.add_theme_constant_override("separation", 16)
 	rows.add_child(cards)
-	for id in ["hell", "ice"]:
+	for id in ["ice"]:
 		var button = _button("", func(): save_store.data.selected_map = id; save_store.save(); _choose_difficulty(id), cards, Vector2(410, 310))
 		button.tooltip_text = "Выбрать карту"
 		var content = VBoxContainer.new()
@@ -360,8 +362,8 @@ func _show_maps() -> void:
 		preview.custom_minimum_size = Vector2(386, 196)
 		preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		content.add_child(preview)
-		_label("ПЕПЕЛЬНЫЙ РАЗЛОМ" if id == "hell" else "ЗИМНЯЯ БУХТА", content, 19).mouse_filter = Control.MOUSE_FILTER_IGNORE
-		var description = _label("Лава, огненные уступы и дорога сквозь руины" if id == "hell" else "Водопад, береговые уступы и узкий мост", content, 12)
+		_label("ЗИМНЯЯ БУХТА", content, 19).mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var description = _label("Водопад, соединённые озёра, лагерь и каменный мост", content, 12)
 		description.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		var record = _label("20 волн · Рекорд: %d · %s" % [save_store.data.best_waves.get(id, 0), "★".repeat(int(save_store.data.stars.get(id, 0)))], content, 12)
 		record.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -396,6 +398,7 @@ func _show_rules() -> void:
 	_button("Понятно", _back_dialog, rows)
 
 func start_game(id: String, difficulty_id: String) -> void:
+	if id != "ice": id = "ice"
 	if _loading:
 		return
 	_loading = true
@@ -444,9 +447,9 @@ func start_game(id: String, difficulty_id: String) -> void:
 	sim.changed.connect(_refresh)
 	sim.wave_started.connect(func(): sound.wave_start())
 	sim.completed.connect(_completed)
-	accent = Color("c99d62") if id == "hell" else Color("99c3d2")
-	panel_color = Color("181410") if id == "hell" else Color("10212b")
-	muted = Color("b9aa95") if id == "hell" else Color("a6c0ca")
+	accent = Color("99c3d2")
+	panel_color = Color("10212b")
+	muted = Color("a6c0ca")
 	ui.theme = _theme()
 	world = Node3D.new()
 	add_child(world)
@@ -626,6 +629,8 @@ func _build_hud() -> void:
 	ui.add_child(speed_bar)
 	tactical_button = _button("Ⅱ Пауза", _toggle_tactical_pause, speed_bar, Vector2(130, 44))
 	tactical_button.tooltip_text = "Пробел · Можно строить, улучшать и продавать башни"
+	fps_label = _label("FPS —", ui, 11)
+	fps_label.modulate = muted
 	var tempo = VBoxContainer.new()
 	tempo.add_theme_constant_override("separation", 3)
 	speed_bar.add_child(tempo)
@@ -769,6 +774,7 @@ func _layout() -> void:
 		return
 	navigation.position = Vector2(18, 14)
 	speed_bar.position = Vector2(view.x - speed_bar.get_combined_minimum_size().x - 18, 32)
+	if is_instance_valid(fps_label): fps_label.position = Vector2(view.x - 125, 12)
 	wave_label.position = Vector2((view.x - 150) * 0.5, 44)
 	dock.position = Vector2((view.x - dock.get_combined_minimum_size().x) * 0.5, view.y - dock.get_combined_minimum_size().y - 14)
 	_fit_camera()
@@ -1126,6 +1132,11 @@ func _physics_process(delta: float) -> void:
 		sim.tick(min(delta, 0.1))
 
 func _process(delta: float) -> void:
+	if sim != null and is_instance_valid(fps_label):
+		_fps_elapsed += delta
+		if _fps_elapsed >= .25:
+			fps_label.text = "FPS  %d" % Engine.get_frames_per_second()
+			_fps_elapsed = 0.0
 	if sim != null and camera != null and not _loading:
 		var game_delta = max(0.0, sim.game_time - _last_time)
 		_last_time = sim.game_time

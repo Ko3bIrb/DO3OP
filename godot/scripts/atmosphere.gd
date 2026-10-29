@@ -25,7 +25,7 @@ func _light(parent: Node3D, at: Vector3, color: Color, energy: float, radius: fl
 
 func configure(scene: Node3D, id: String) -> void:
  _menu = id == "menu"
- var winter = id != "hell"
+ var winter = true
  var environment = WorldEnvironment.new()
  var settings = Environment.new()
  settings.background_mode = Environment.BG_SKY

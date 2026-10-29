@@ -269,7 +269,11 @@ func route_position(enemy: Dictionary) -> Vector3:
 	var t3 = t2 * t
 	var center = (.5 * ((2.0*p1) + (-p0+p2)*t + (2.0*p0-5.0*p1+4.0*p2-p3)*t2 + (-p0+3.0*p1-3.0*p2+p3)*t3))
 	var tangent = route_tangent(enemy)
-	return center + Vector3(-tangent.z, 0.0, tangent.x) * float(enemy.get("lane", 0.0))
+	var lane = clampf(float(enemy.get("lane", 0.0)), -.24, .24)
+	# The winter bridge is a narrow stone deck. All enemies cross its centre line.
+	if map_id == "ice" and absf(p1.z - 15.0) < .2 and absf(p2.z - 15.0) < .2:
+		lane = 0.0
+	return center + Vector3(-tangent.z, 0.0, tangent.x) * lane
 
 func route_tangent(enemy: Dictionary) -> Vector3:
 	var i = clampi(enemy.path_index, 0, waypoints.size() - 2)

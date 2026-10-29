@@ -9,7 +9,7 @@ void fragment(){
  float joint=min(min(f.x,1.-f.x),min(f.y,1.-f.y));
  float slab=smoothstep(.035,.11,joint);
  float variation=hash(id);
- vec3 stone=winter?vec3(.25,.30,.33):vec3(.10,.065,.048);
+ vec3 stone=winter?vec3(.25,.30,.33):vec3(.18,.105,.070);
  ALBEDO=mix(stone*.28,stone*(.78+variation*.45),slab);
  if(winter){float frost=step(.87,hash(floor(world.xz*3.)))*.2;ALBEDO+=vec3(.30,.38,.43)*frost;}
  ROUGHNESS=.87;METALLIC=.03;

@@ -91,7 +91,7 @@ func configure(scene: Node3D, id: String) -> void:
   var scenery = JSON.parse_string(FileAccess.get_file_as_string("res://data/landscapes.json"))[id]
   for i in range(scenery.get("lanterns",[]).size()):
    var p = scenery.lanterns[i]
-   _light(scene,Vector3(p[0],p[1],p[2]),Color("ffca8b"),3.2,10,i%4==0)
+   _light(scene,Vector3(p[0],p[1],p[2]),Color("ffca8b"),3.2,10,false)
   for p in scenery.get("homes",[]):
    _light(scene,Vector3(p[0],p[1],p[2]),Color("ffd39a"),1.8,7)
   for i in range(mini(14,scenery.fires.size())):

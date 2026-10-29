@@ -78,7 +78,7 @@ def build_landscape(c,mapid):
   for j in range(nz-1):
    for i in range(nx-1):
     k=j*nx+i;ids=(k,k+nx,k+nx+1,k+1)
-    if not ice or min(bay(vv[v][0],vv[v][2]) for v in ids)<1.5:ff.append(ids)
+    if not ice or min(bay(vv[v][0],vv[v][2]) for v in ids)<1.5 or (ice and all(abs(vv[v][0])<7.0 and 10.0<vv[v][2]<20.0 for v in ids)):ff.append(ids)
   mesh('Central bay' if ice else 'Molten basin',vv,ff,water if ice else magma,smooth=True)
  basin_surface()
  # A stepped rock lip breaks the waterfall into several unequal falling streams.

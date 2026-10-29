@@ -525,24 +525,24 @@ def enemy(kind,d):
 
 def fir(p,height=6,snow=True):
  x,y,z=p;tube('Fir trunk',(x,y,z),(x,y+height,z),height*.035,WOOD,r2=.015,verts=10)
- for layer in range(8):
+ for layer in range(5):
   yy=y+height*(.16+layer*.098);radius=height*(.30-layer*.035)
-  for branch in range(6):
+  for branch in range(5):
    angle=branch*math.tau/6+layer*.43+random.uniform(-.15,.15)
    forward=Vector((math.cos(angle),0,math.sin(angle)))
    across=Vector((-forward.z,0,forward.x))
    origin=Vector((x,yy,z));tip=origin+forward*radius+Vector((0,-height*.065,0))
    tube('Natural fir bough',origin,tip,height*.010,WOOD,r2=.004,verts=6)
-   for segment in range(1,5):
+   for segment in range(1,4):
     t=segment/5;at=origin.lerp(tip,t);w=radius*.22*(1-t*.7)
     for side in [-1,1]:
      end=at+forward*radius*.24+across*w*side+Vector((0,-height*.025,0))
      # Serrated needle fronds with visible gaps and irregular snowy shoulders.
      verts=[at];faces=[]
-     for j in range(7):
-      u=j/6;point=at.lerp(end,u);width=height*.035*math.sin(math.pi*u)*(1+random.uniform(-.15,.15))
+     for j in range(5):
+      u=j/4;point=at.lerp(end,u);width=height*.035*math.sin(math.pi*u)*(1+random.uniform(-.15,.15))
       verts.extend([point+across*width,point-across*width])
-     for j in range(6):faces.append((1+j*2,1+(j+1)*2,2+(j+1)*2,2+j*2))
+     for j in range(4):faces.append((1+j*2,1+(j+1)*2,2+(j+1)*2,2+j*2))
      mesh('Fir needles',verts,faces,PINE,smooth=True)
      if snow and segment%2==0:
       curve('Snow on bough',[at+Vector((0,height*.012,0)),at.lerp(end,.55)+Vector((0,height*.016,0)),end],height*.015,SNOW)

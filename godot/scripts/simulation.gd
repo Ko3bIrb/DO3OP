@@ -122,7 +122,7 @@ func spawn(type: String, hp_override: float = -1.0) -> Dictionary:
 	var data = map.enemies[type]
 	_next_id += 1
 	var health = float(Data.js_round(data.baseHp * pow(1.15, max(0, wave - 1)) * difficulty.enemyHpMul)) if hp_override < 0 else hp_override
-	var enemy = {"id": _next_id, "type": type, "hp": health, "max_hp": health, "speed": data.speed * difficulty.enemySpeedMul, "armor": data.armor, "flying": data.flying, "position": waypoints[0], "path_index": 0, "progress": 0.0, "base_y": 1.6 if data.flying else max(0.6, data.size * 0.75), "alive": true, "slow_factor": 0.0, "slow_until": 0.0, "stun_until": 0.0, "summon_at": 0.0, "step_at": 0.0, "buff_at": 0.0, "siege_at": 0.0, "buff_until": 0.0, "walk_phase": randf() * TAU}
+	var enemy = {"id": _next_id, "type": type, "hp": health, "max_hp": health, "speed": data.speed * difficulty.enemySpeedMul, "armor": data.armor, "flying": data.flying, "position": waypoints[0], "path_index": 0, "progress": 0.0, "base_y": 1.6 if data.flying else max(0.6, data.size * 0.75), "alive": true, "slow_factor": 0.0, "slow_until": 0.0, "stun_until": 0.0, "summon_at": 0.0, "step_at": 0.0, "buff_at": 0.0, "siege_at": 0.0, "buff_until": 0.0, "lane": (float((_next_id % 5) - 2) * .24), "walk_phase": randf() * TAU}
 	enemies.append(enemy)
 	enemy_spawned.emit(enemy)
 	return enemy
@@ -255,8 +255,33 @@ func _update_enemies(delta: float) -> void:
 					break
 		if not enemy.alive:
 			continue
-		enemy.position = waypoints[enemy.path_index].lerp(waypoints[enemy.path_index + 1], enemy.progress)
+		enemy.position = route_position(enemy)
 		enemy.walk_phase += delta * (2.2 if data.flying else float(data.walk.bobFreq) * clampf(velocity / data.speed, 0.15, 1.5))
+
+func route_position(enemy: Dictionary) -> Vector3:
+	var i = clampi(enemy.path_index, 0, waypoints.size() - 2)
+	var t = clampf(enemy.progress, 0.0, 1.0)
+	var p0 = waypoints[maxi(i - 1, 0)]
+	var p1 = waypoints[i]
+	var p2 = waypoints[i + 1]
+	var p3 = waypoints[mini(i + 2, waypoints.size() - 1)]
+	var t2 = t * t
+	var t3 = t2 * t
+	var center = (.5 * ((2.0*p1) + (-p0+p2)*t + (2.0*p0-5.0*p1+4.0*p2-p3)*t2 + (-p0+3.0*p1-3.0*p2+p3)*t3))
+	var tangent = route_tangent(enemy)
+	return center + Vector3(-tangent.z, 0.0, tangent.x) * float(enemy.get("lane", 0.0))
+
+func route_tangent(enemy: Dictionary) -> Vector3:
+	var i = clampi(enemy.path_index, 0, waypoints.size() - 2)
+	var t = clampf(enemy.progress, 0.0, 1.0)
+	var p0 = waypoints[maxi(i - 1, 0)]
+	var p1 = waypoints[i]
+	var p2 = waypoints[i + 1]
+	var p3 = waypoints[mini(i + 2, waypoints.size() - 1)]
+	var t2 = t * t
+	var tangent = .5 * ((-p0+p2) + 2.0*(2.0*p0-5.0*p1+4.0*p2-p3)*t + 3.0*(-p0+3.0*p1-3.0*p2+p3)*t2)
+	tangent.y = 0.0
+	return tangent.normalized() if tangent.length_squared() > .0001 else (p2-p1).normalized()
 
 func target_for(tower: Dictionary) -> Dictionary:
 	var best: Dictionary = {}
@@ -295,8 +320,7 @@ func _update_towers(delta: float) -> void:
 					enemy.slow_until = game_time + 0.3
 					active = true
 			if active and game_time >= tower.pulse:
-				effect.emit({"kind": "ring", "position": tower.position, "radius": tower.stats.range, "color": Color.CYAN})
-				tower.pulse = game_time + 2.5
+				tower.pulse = game_time + 1.4
 			continue
 		if tower.type == "amp":
 			continue

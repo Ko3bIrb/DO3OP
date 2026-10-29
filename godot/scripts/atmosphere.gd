@@ -46,20 +46,20 @@ func configure(scene: Node3D, id: String) -> void:
  settings.tonemap_mode = Environment.TONE_MAPPER_AGX
  settings.tonemap_exposure = 0.95
  settings.ssao_enabled = true
- settings.ssao_radius = 2.5
- settings.ssao_intensity = 1.5
- settings.ssil_enabled = true
- settings.ssil_intensity = 0.6
+ settings.ssao_radius = 1.8
+ settings.ssao_intensity = 1.0
+ settings.ssil_enabled = false
+ settings.ssil_intensity = 0.0
  settings.glow_enabled = true
- settings.glow_intensity = 0.65
+ settings.glow_intensity = 0.48
  settings.glow_bloom = 0.03
  settings.glow_hdr_threshold = 1.5
  settings.fog_enabled = true
  settings.fog_light_color = Color("465c7b") if winter else Color("63301c")
  settings.fog_density = 0.0009 if not _menu else 0.007
  settings.fog_sun_scatter = 0.12
- settings.volumetric_fog_enabled = true
- settings.volumetric_fog_density = 0.006 if _menu else 0.0008
+ settings.volumetric_fog_enabled = false
+ settings.volumetric_fog_density = 0.0
  settings.volumetric_fog_albedo = Color("b6c4d2") if winter else Color("9c4a27")
  settings.volumetric_fog_sky_affect = 0.3
  environment.environment = settings
@@ -72,7 +72,7 @@ func configure(scene: Node3D, id: String) -> void:
  moon.shadow_enabled = true
  moon.light_angular_distance = 2.0
  moon.directional_shadow_max_distance = 300.0
- moon.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
+ moon.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
  scene.add_child(moon)
  var rim = DirectionalLight3D.new()
  rim.rotation_degrees = Vector3(-23, 145, 0)
@@ -99,7 +99,7 @@ func configure(scene: Node3D, id: String) -> void:
    _light(scene,Vector3(p[0],p[1]+1,p[2]),Color("ff9b4c"),4.5,12,i<4)
   if winter:
    _light(scene,Vector3(0,2,-25),Color("6eabbc"),2.5,23)
-   settings.ssr_enabled = true
+   settings.ssr_enabled = false
   else:
    for at in [Vector3(-3,1,3),Vector3(-4,1,-21),Vector3(-10,25,-52)]:
     _light(scene,at,Color("ff6a24"),5.0,24)
@@ -116,7 +116,7 @@ func configure(scene: Node3D, id: String) -> void:
 func _snow(scene: Node3D, winter: bool) -> void:
  var particles = GPUParticles3D.new()
  particles.name = "Drifting snow" if winter else "Floating ash"
- particles.amount = 900 if _menu else 1300 if winter else 350
+ particles.amount = 700 if _menu else 600 if winter else 180
  particles.lifetime = 18
  particles.preprocess = 5
  particles.visibility_aabb = AABB(Vector3(-120,-20,-100), Vector3(240,100,200))

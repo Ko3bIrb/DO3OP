@@ -85,6 +85,15 @@ func lightning(start: Vector3,end: Vector3,color: Color) -> void:
 func ring_at(at: Vector3,radius: float,color: Color,life: float=.6) -> void:
  _particle("ring",at+Vector3.UP*.16,Vector3.ZERO,Color(color,.5),radius,life,.4)
 
+func freeze_aura(at: Vector3, radius: float) -> void:
+ # Small, slow pulses around affected enemies. The effect is deliberately dim and pooled.
+ _particle("ring", at + Vector3.UP*.04, Vector3.ZERO, Color(.45,.72,.82,.22), radius, .58, .10)
+ for i in range(2):
+  var angle = random.randf() * TAU
+  var edge = at + Vector3(cos(angle), .12 + random.randf()*.2, sin(angle)) * radius
+  _particle("hot", edge, Vector3(0,.18,0), Color(.63,.86,.92,.35), .025, .45, -.01, -.1)
+
+
 func death(at: Vector3,type: String,size: float,flying: bool) -> void:
  var ice=type.begins_with("ice_") or type in ["snow_witch","blizzard_spirit","blizzard_lord","frost_guardian","snow_devourer"]
  var color=Color("a4d9ec") if ice else Color("c27848")

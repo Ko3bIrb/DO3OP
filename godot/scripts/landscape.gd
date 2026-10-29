@@ -52,7 +52,9 @@ func configure(scene: Node3D, id: String) -> void:
    var instance=MultiMeshInstance3D.new()
    instance.name="Instanced_"+key
    instance.multimesh=mm
-   instance.visibility_range_end=280
+   # Repeated forest props keep their silhouettes but do not cast hundreds of duplicate shadows.
+   instance.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+   instance.visibility_range_end=210
    add_child(instance)
   source.free()
  var flame_material=ShaderMaterial.new()
@@ -71,7 +73,7 @@ func configure(scene: Node3D, id: String) -> void:
 func _mist(at: Vector3) -> void:
  var mist=GPUParticles3D.new()
  mist.name="WaterfallMist"
- mist.amount=120
+ mist.amount=48
  mist.lifetime=3.0
  mist.preprocess=3
  mist.position=at

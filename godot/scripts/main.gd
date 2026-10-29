@@ -66,6 +66,7 @@ var _last_time = 0.0
 var fx: Node3D
 var _actor_pool: Dictionary = {}
 var _recoil: Dictionary = {}
+var _slow_fx_clock: Dictionary = {}
 var _loading = false
 var _loading_overlay: ColorRect
 var _bar_background: QuadMesh
@@ -763,7 +764,8 @@ func _layout() -> void:
 		if is_instance_valid(menu):
 			var box = menu.get_node_or_null("MenuBox")
 			if box != null:
-				box.position = Vector2(view.x * 0.075, maxf(24, (view.y - box.get_combined_minimum_size().y) * 0.5))
+				var size = box.get_combined_minimum_size()
+				box.position = Vector2(maxf(12.0, (view.x - size.x) * 0.5), maxf(12.0, (view.y - size.y) * 0.5))
 		return
 	navigation.position = Vector2(18, 14)
 	speed_bar.position = Vector2(view.x - speed_bar.get_combined_minimum_size().x - 18, 32)
@@ -1143,8 +1145,16 @@ func _process(delta: float) -> void:
 				elif joint.role == 4: joint.node.scale.y = 1+sin(phase*.5)*.012
 			var visual_position = entry.get("previous",enemy.position).lerp(enemy.position,interpolation)
 			entry.node.position = visual_position + Vector3.UP * (enemy.base_y + (sin(phase) if data.flying else abs(sin(phase))) * data.walk.bobAmp * data.size)
-			var direction = sim.waypoints[enemy.path_index + 1] - sim.waypoints[enemy.path_index]
+			var direction = sim.route_tangent(enemy)
 			entry.node.rotation = Vector3(cos(phase * 2) * data.walk.get("leanAmp", 0.02), atan2(direction.x, direction.z), sin(phase) * data.walk.swayAmp * data.size)
+			if enemy.slow_until > sim.game_time and not data.get("slowImmune", false):
+				var remaining = _slow_fx_clock.get(enemy.id, 0.0) - delta
+				if remaining <= 0.0:
+					fx.freeze_aura(visual_position + Vector3.UP * enemy.base_y * .65, maxf(.45, data.size * .42))
+					remaining = .42
+				_slow_fx_clock[enemy.id] = remaining
+			else:
+				_slow_fx_clock.erase(enemy.id)
 			var body_height = 1.9 if enemy.type == "hound" else 1.75 if "ballista" in enemy.type else 3.4
 			entry.bar.position = visual_position + Vector3.UP * (body_height * data.size * data.get("visualScale",1.0) + 0.45 + (enemy.base_y - data.size * 0.35 if data.flying else 0.0))
 			entry.bar.quaternion = camera.quaternion

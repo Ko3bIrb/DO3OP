@@ -8,7 +8,7 @@ from mathutils import Vector
 def build_props(c):
  for i in range(3):
   random.seed(720+i);c['start']();c['fir']((0,0,0),[5.8,7.1,4.6][i],True);c['export']('prop_fir_'+str(i))
- for ice in [True,False]:
+ for ice in [True]:
   for i in range(3):
    random.seed(460+i);c['start']();c['rock']((0,0,0),[1.0,1.5,.7][i],ice);c['export']('prop_'+('snowrock_' if ice else 'basalt_')+str(i))
 
@@ -32,7 +32,7 @@ def build_landscape(c,mapid):
   if ice:
    q=(x/(13.8+1.0*math.sin(z*.21)))**2+((z+19)/20.5)**2
    outlet=(x/1.8)**2+((z-10)/16)**2
-   lower_bay=((x+8.0)/8.5)**2+((z-26.0)/7.0)**2
+   lower_bay=((x+8.0)/23.0)**2+((z-26.0)/19.0)**2
    channel_x=-3.0+0.22*(z-15.0)
    channel=((x-channel_x)/3.2)**2+((z-20.0)/8.5)**2
    return min(q,outlet,lower_bay,channel)
@@ -207,7 +207,7 @@ def build_landscape(c,mapid):
   for i in range(25):
    x=-6.0+i*.5;box('Bridge paving',(x,.055,15),(.51,.19,3.8),stone,bevel=.04)
   # A single road-colored ribbon ties both curved approaches into the bridge deck.
-  bridge_path=[Vector((-6,0,13.0)),Vector((-5,0,14.2)),Vector((-4,0,15.0)),Vector((4,0,15.0)),Vector((5,0,14.2)),Vector((6,0,13.0))]
+  bridge_path=[Vector((-6,0,13.0)),Vector((-6,0,15.0)),Vector((6,0,15.0)),Vector((6,0,13.0))]
   bridge_v=[];bridge_f=[]
   for i,pp in enumerate(bridge_path):
    tangent=(bridge_path[min(i+1,len(bridge_path)-1)]-bridge_path[max(0,i-1)]).normalized();normal=Vector((-tangent.z,0,tangent.x));w=1.82

@@ -292,7 +292,7 @@
             "swayAmp": 0.09,
             "leanAmp": 0.05
           },
-          "visualScale": 0.64
+          "visualScale": 0.78
         },
         "knight": {
           "name": "Огненный рыцарь",
@@ -311,7 +311,7 @@
             "swayAmp": 0.05,
             "leanAmp": 0.04
           },
-          "visualScale": 0.66
+          "visualScale": 0.78
         },
         "soul_eater": {
           "name": "Пожиратель Душ",
@@ -339,7 +339,7 @@
             "swayAmp": 0.03,
             "leanAmp": 0.02
           },
-          "visualScale": 0.66
+          "visualScale": 0.78
         },
         "hound": {
           "name": "Адская гончая",
@@ -386,7 +386,7 @@
             "swayAmp": 0.08,
             "leanAmp": 0.03
           },
-          "visualScale": 0.64
+          "visualScale": 0.76
         },
         "ballista": {
           "name": "Баллиста",
@@ -1071,7 +1071,7 @@
             "swayAmp": 0.09,
             "leanAmp": 0.05
           },
-          "visualScale": 0.46
+          "visualScale": 0.62
         },
         "ice_golem": {
           "name": "Ледяной Голем",
@@ -1120,7 +1120,7 @@
             "swayAmp": 0.05,
             "leanAmp": 0.03
           },
-          "visualScale": 0.61
+          "visualScale": 0.72
         },
         "ice_knight": {
           "name": "Ледяной Рыцарь",
@@ -1156,7 +1156,7 @@
             "swayAmp": 0.12,
             "leanAmp": 0.02
           },
-          "visualScale": 0.65
+          "visualScale": 0.72
         },
         "ice_harpy": {
           "name": "Ледяная Гарпия",
@@ -1179,7 +1179,7 @@
             "swayAmp": 0.1,
             "leanAmp": 0.04
           },
-          "visualScale": 0.75
+          "visualScale": 0.82
         },
         "ice_ballista": {
           "name": "Ледяная Баллиста",

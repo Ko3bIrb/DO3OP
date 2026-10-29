@@ -267,7 +267,11 @@ func route_position(enemy: Dictionary) -> Vector3:
 	var p3 = waypoints[mini(i + 2, waypoints.size() - 1)]
 	var t2 = t * t
 	var t3 = t2 * t
-	var center = (.5 * ((2.0*p1) + (-p0+p2)*t + (2.0*p0-5.0*p1+4.0*p2-p3)*t2 + (-p0+3.0*p1-3.0*p2+p3)*t3))
+	var is_bridge = map_id == "ice" and absf(p1.z - 15.0) < .2 and absf(p2.z - 15.0) < .2
+	var center = p1.lerp(p2, t) if is_bridge else (.5 * ((2.0*p1) + (-p0+p2)*t + (2.0*p0-5.0*p1+4.0*p2-p3)*t2 + (-p0+3.0*p1-3.0*p2+p3)*t3))
+	# Catmull-Rom must not overshoot a road segment at a sharp bend.
+	center.x = clampf(center.x, minf(p1.x,p2.x)-.35, maxf(p1.x,p2.x)+.35)
+	center.z = clampf(center.z, minf(p1.z,p2.z)-.35, maxf(p1.z,p2.z)+.35)
 	var tangent = route_tangent(enemy)
 	var lane = clampf(float(enemy.get("lane", 0.0)), -.24, .24)
 	# The winter bridge is a narrow stone deck. All enemies cross its centre line.
@@ -283,7 +287,7 @@ func route_tangent(enemy: Dictionary) -> Vector3:
 	var p2 = waypoints[i + 1]
 	var p3 = waypoints[mini(i + 2, waypoints.size() - 1)]
 	var t2 = t * t
-	var tangent = .5 * ((-p0+p2) + 2.0*(2.0*p0-5.0*p1+4.0*p2-p3)*t + 3.0*(-p0+3.0*p1-3.0*p2+p3)*t2)
+	var tangent = (p2-p1) if map_id == "ice" and absf(p1.z - 15.0) < .2 and absf(p2.z - 15.0) < .2 else .5 * ((-p0+p2) + 2.0*(2.0*p0-5.0*p1+4.0*p2-p3)*t + 3.0*(-p0+3.0*p1-3.0*p2+p3)*t2)
 	tangent.y = 0.0
 	return tangent.normalized() if tangent.length_squared() > .0001 else (p2-p1).normalized()
 

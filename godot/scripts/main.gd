@@ -843,8 +843,9 @@ func enter_build(type: String) -> void:
 	_ghost_style(ghost)
 	ghost.hide()
 	for i in range(spot_nodes.size()):
-		# Keep the road visually clean; the ghost and cursor show the valid build point.
-		spot_nodes[i].visible = false
+		var valid = _spot_allows(i, type)
+		spot_nodes[i].visible = valid
+		spot_nodes[i].material_override.albedo_color = Color("48ff78") if valid else Color("a4c5d5")
 	_refresh()
 
 func cancel_build() -> void:

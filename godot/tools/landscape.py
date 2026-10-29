@@ -32,7 +32,10 @@ def build_landscape(c,mapid):
   if ice:
    q=(x/(13.8+1.0*math.sin(z*.21)))**2+((z+19)/20.5)**2
    outlet=(x/1.8)**2+((z-10)/16)**2
-   return min(q,outlet)
+   lower_bay=((x+8.0)/8.5)**2+((z-26.0)/7.0)**2
+   channel_x=-3.0+0.22*(z-15.0)
+   channel=((x-channel_x)/3.2)**2+((z-20.0)/8.5)**2
+   return min(q,outlet,lower_bay,channel)
   return ((x+3)/13.2)**2+((z-3)/11.5)**2
  def river_distance(x,z):
   center=(-4+2.0*math.sin(z*.15)) if not ice else .4*math.sin(z*.3)
@@ -197,6 +200,10 @@ def build_landscape(c,mapid):
     x=side*28;y=height(x,z)
     tube('Settlement fence post',(x,y,z),(x,y+1,z),.08,wood)
     tube('Settlement fence rail',(x,y+.65,z),(x,height(x,z+2)+.65,z+2),.065,wood)
+  # The lower-left basin is connected to the main lake by a visible water channel below the bridge.
+  for j in range(14):
+   xx=-9.5+j*.55
+   box('Lower basin shore stone',(xx,-.72,25.0),(1.0,.20,.55),stone,bevel=.08)
   # A lookout island with a short footbridge to the east shore.
   for x in range(2,11):box('Lookout footbridge',(x,-.05,-20),(.94,.18,1.6),wood,bevel=.04)
   # Dock and moored fishing boat on the sheltered shore.
@@ -222,6 +229,16 @@ def build_landscape(c,mapid):
    a=i*math.tau/64;vv.append((-12+math.cos(a)*4.5,26+math.sin(a*5)*.15,-53+math.sin(a)*3.4))
   mesh('Glowing volcanic crater',vv,[(0,i+2,i+1) for i in range(64)],magma)
   meta['fires'].append([-12,27,-53])
+  # A broad infernal bridge carries the route over the lava sea; its arches are readable from the game camera.
+  for j in range(18):
+   xx=-45+j*.58
+   box('Infernal bridge deck',(xx,1.4,-7.0),(.62,.28,4.4),stone,bevel=.07)
+  for side in [-1,1]:
+   curve('Infernal bridge arch',[(-45,1.2,-7+side*1.9),(-40,-3.0,-7+side*1.9),(-35,1.2,-7+side*1.9)],.48,stone)
+   box('Infernal bridge parapet',(-40,2.2,-7+side*2.12),(11,.9,.34),stone,bevel=.08)
+  for xx in [-44,-40,-36]:
+   tube('Infernal bridge brazier', (xx,1.8,-9.8),(xx,3.0,-9.8),.24,basalt,verts=10)
+   meta['fires'].append([xx,3.0,-9.8])
  c['fortress'](route[-1],ice)
  # The enemy source is a fortress with an open, illuminated gate facing the road.
  x,y,z=route[0];wall=c['ICE'] if ice else basalt;glow=c['FROST'] if ice else c['EMBER']
@@ -302,5 +319,12 @@ def build_landscape(c,mapid):
    tube('Charred crooked tree',(x,height(x,z),z),(x+.3,height(x,z)+3.2,z-.2),.13,wood,r2=.025)
    tube('Broken limb',(x+.2,height(x,z)+1.8,z),(x+1.1,height(x,z)+2.4,z+.4),.06,wood,r2=.01)
  c['FAST_WORLD']=False;c['flush_world']();c['export']('world_'+mapid)
+ if mapid=='ice':
+  trees=[item for item in meta['instances'] if item['key'].startswith('prop_fir_')]
+  others=[item for item in meta['instances'] if not item['key'].startswith('prop_fir_')]
+  if len(trees)>820:
+   stride=len(trees)/820.0
+   trees=[trees[min(len(trees)-1,int(i*stride))] for i in range(820)]
+  meta['instances']=others+trees
  path=c['R']/'data/landscapes.json';existing=json.loads(path.read_text()) if path.exists() else {};existing[mapid]=meta
  path.write_text(json.dumps(existing,ensure_ascii=False,indent=2)+'\n')

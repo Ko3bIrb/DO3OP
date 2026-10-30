@@ -3,11 +3,17 @@ render_mode cull_disabled,depth_prepass_alpha;
 uniform int mode=1;
 float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+1.),f.x),f.y);}
+varying float fall_coord;
+void vertex(){
+ // The imported waterfall keeps world Y as its vertical axis. Negating it
+ // makes the coordinate increase from the high source toward the lake.
+ fall_coord=-VERTEX.y*.22;
+}
 void fragment(){
- // UV.y runs from the off-screen source (1) toward the pool (0). Advancing
- // the noise with time moves each highlight toward the pool, never upward.
- float streak=n(vec2(UV.x*22.,UV.y*6.+TIME*2.2));
- float fine=n(vec2(UV.x*47.,UV.y*15.+TIME*5.));
+ // Moving noise toward larger fall_coord makes highlights travel down the
+ // sheet, independent of imported UV orientation.
+ float streak=n(vec2(UV.x*22.,fall_coord*1.1-TIME*2.2));
+ float fine=n(vec2(UV.x*47.,fall_coord*2.8-TIME*5.));
  float edge=smoothstep(0.,.16,UV.x)*(1.-smoothstep(.84,1.,UV.x));
  float foam=smoothstep(.42,.90,streak*.7+fine*.45);
  ALBEDO=mix(vec3(.12,.34,.41),vec3(.73,.87,.89),foam);

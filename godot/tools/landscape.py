@@ -83,24 +83,33 @@ def build_landscape(c,mapid):
  basin_surface()
  # A stepped rock lip breaks the waterfall into several unequal falling streams.
  if ice:
-  # Start well above the camera framing. The upper source is deliberately
-  # outside the game view so the streams enter from the mountain instead of
-  # exposing an artificial, floating beginning.
-  for strand,(cx,width,top,bottom,phase) in enumerate([(-1.2,1.05,-56.5,-33.2,.0),(.9,.7,-55.6,-32.4,1.5),(2.0,.38,-54.4,-33.8,3.2)]):
+  # The source runs through the mountain and spills over a real rock lip.
+  # Its upper end stays above the camera framing; only the formed cascade is
+  # visible before it widens into the lake.
+  lip_z=-45.5;lip_y=13.95;source_y=28.0
+  for strand,(cx,width,top,bottom,phase) in enumerate([(-1.2,1.05,-60.0,-33.2,.0),(.9,.7,-59.1,-32.4,1.5),(2.0,.38,-58.0,-33.8,3.2)]):
    vv=[];ff=[];steps=74
    for i in range(steps+1):
     t=i/steps;z=top+(bottom-top)*t
     x=cx+.28*math.sin(t*9+phase)+.18*math.sin(t*23+phase)
-    w=width*(.62+.25*math.sin(t*17+phase)+.45*t)
-    y=-.75+18*max(0,(-z-34)/13)**1.65
+    fall_t=max(0,min(1,(z-lip_z)/(bottom-lip_z)))
+    w=width*(.62+.12*math.sin(t*17+phase)+.72*fall_t)
+    if z<lip_z:
+     upstream_t=max(0,min(1,(z-top)/(lip_z-top)))
+     y=source_y+(lip_y-source_y)*upstream_t
+    else:
+     y=lip_y+(-.75-lip_y)*fall_t**1.18
     for j in range(5):
      u=j/4;vv.append((x+(u*2-1)*w,y+.15+.12*math.sin(t*29+u*8+phase),z))
    for i in range(steps):
     for j in range(4):
      k=i*5+j;ff.append((k,k+5,k+6,k+1))
-   # UV.y is one at the hidden top and zero at the pool. The waterfall
-   # shader advances this coordinate toward zero, matching the fall direction.
-   c['emit']([tuple(c['V'](v)) for v in vv],ff,cascade,uv=[(j/4,1.0-i/steps) for i in range(steps+1) for j in range(5)],smooth=True)
+   c['emit']([tuple(c['V'](v)) for v in vv],ff,cascade,uv=[(j/4,i/steps) for i in range(steps+1) for j in range(5)],smooth=True)
+  # A broad wet shelf makes the source read as a mountain ledge instead of a
+  # rectangular cut in the air. The falling sheets pass over its front edge.
+  box('Waterfall wet cliff lip',(0,13.15,-46.9),(8.4,1.6,2.8),slate,bevel=.22)
+  box('Waterfall left shoulder',(-4.25,10.6,-46.7),(2.0,5.0,3.6),slate,bevel=.24)
+  box('Waterfall right shoulder',(4.25,10.6,-46.7),(2.0,5.0,3.6),slate,bevel=.24)
   meta['mist'] += [[-1,-.3,-33],[1,-.3,-33.8]]
  else:
   # Several molten tributaries crawl down the volcano instead of a straight stripe.

@@ -48,8 +48,13 @@ def build_landscape(c,mapid):
    h-=9*math.exp(-crater*2)
   q=bay(x,z)
   if q<1.18:h=min(h,-4.2+4.1*max(0,q-.57)/.61)
-  if -48<z<-10 and river_distance(x,z)<(2.6 if ice else 3.4):
-   if ice:h=min(h,-1+18*max(0,(-z-34)/13)**1.65)
+  if -89<z<-10 and river_distance(x,z)<(4.8 if ice else 3.4):
+   if ice:
+    # Open a long upstream gorge through the mountain. Without this cut the
+    # terrain occludes every higher part of the waterfall and creates the same
+    # artificial horizontal start no matter how far the source is extended.
+    channel_t=max(0,min(1,(-z-34)/55))
+    h=min(h,-1+30*channel_t**1.15)
    else:h=min(h,-2.7+max(0,(-z-25))*1.0)
   d=c['near_route'](x,z,route)
   ds=min(math.hypot(x-s['position'][0],z-s['position'][2]) for s in spots)
@@ -415,7 +420,7 @@ def build_landscape(c,mapid):
   if min(math.hypot(x-route[k][0],z-route[k][2]) for k in [0,-1])<8:return False
   # The central cascade is a visible landmark; keep every instanced rock and
   # tree outside its water channel so nothing appears to float in the fall.
-  if ice and -50<z<-30 and river_distance(x,z)<4.8:return False
+  if ice and -89<z<-30 and river_distance(x,z)<4.8:return False
   return height(x,z)>(-.75 if ice else -1.0)
  def add_snow_rock(x,z,sc):
   clearance=max(1.0,sc*.80)

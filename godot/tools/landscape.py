@@ -261,7 +261,10 @@ def build_landscape(c,mapid):
   frozen_mine(68,-49,2.10)
   # The western shoulder keeps the history of the old pass: snow-buried ruins
   # and two gargoyles watching the enemy gate.
-  for rx,rz,rs in [(-39,-28,2.4),(-23,-38,1.8),(-40,18,2.0)]:ruin(rx,rz,rs)
+  for rx,rz,rs in [(-39,-28,2.4),(-40,18,2.0)]:ruin(rx,rz,rs)
+  # Replace the road-blocking third ruin with a raised snow-rock cluster.
+  for rx,rz,rs in [(-26,-31,2.1),(-21,-30,1.45),(-28,-27,1.0)]:
+   c['rock']((rx,height(rx,rz),rz),rs,True)
   for gx,gz in [(-60,-12),(-60,12)]:gargoyle(gx,gz,1.6)
   logging_site(27,27,1.2)
   for x,z,sc in [(31,6,.75),(36,10,1.05),(41,7,.9),(45,13,.65),(32,14,.65)]:house(x,z,sc)
@@ -335,7 +338,7 @@ def build_landscape(c,mapid):
  # landmark clearings reserved so foliage and rocks never grow through them.
  reserved=[
   (48,-34,9), (58,-35,9), (68,-49,10), (27,27,10),
-  (-39,-28,9), (-23,-38,7), (-40,18,8), (-60,-12,8), (-60,12,8),
+  (-39,-28,9), (-26,-31,7), (-40,18,8), (-60,-12,8), (-60,12,8),
   (31,6,5), (36,10,6), (41,7,5), (45,13,5), (32,14,5),
   (-6,15,8), (0,-20,4), (-5,-4,5), (route[0][0],route[0][2],14),
   (route[-1][0],route[-1][2],14)

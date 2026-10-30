@@ -19,6 +19,10 @@ def build_landscape(c,mapid):
  stone,snow,basalt,wood,bone,gold=[c[k] for k in ['STONE','SNOW','BASALT','WOOD','BONE','GOLD']]
  water=c['material']('Bay water','16485d',.28,.15,0,False)
  cascade=c['material']('Waterfall','7da5b7',.1,.22,0,False)
+ mine_wood=c['material']('Mine timber foreground','61412a',0,.8)
+ mine_dark=c['material']('Mine darkness foreground','10141a',0,.8,0,False)
+ mine_ice=c['material']('Mine ice foreground','6398b8',.25,.22)
+ mine_snow=c['material']('Mine snow foreground','bed2dc',0,.84)
  magma=c['material']('Living lava','db4310',0,.65,1.2,False)
  terrainmat=c['material']('Mountain ground','71808a' if ice else '24130f',.03,.9)
  roadmat=c['material']('Old road stones','58616a' if ice else '31251d',.02,.9)
@@ -292,13 +296,13 @@ def build_landscape(c,mapid):
   c['ell']('Mill axle',tuple(hub),(.22*scale,.22*scale,.13*scale),stone,seg=12)
  def frozen_mine(x,z,scale=1.0):
   y=height(x,z)
-  box('Frozen mine darkness',(x,y+1.05*scale,z),(2.5*scale,2.0*scale,.30*scale),c['EYE'],bevel=.10)
+  box('Frozen mine darkness',(x,y+1.05*scale,z),(2.5*scale,2.0*scale,.30*scale),mine_dark,bevel=.10)
   for side in [-1,1]:
-   tube('Mine timber support',(x+side*.9*scale,y+.15*scale,z-1.0*scale),(x+side*.9*scale,y+2.0*scale,z-1.0*scale),.14*scale,wood,r2=.10*scale,verts=8)
-  tube('Mine timber lintel',(x-.95*scale,y+2.0*scale,z-1.0*scale),(x+.95*scale,y+2.0*scale,z-1.0*scale),.16*scale,wood,r2=.11*scale,verts=8)
-  c['crystal']((x-1.3*scale,y+.35*scale,z+.15*scale),1.4*scale,c['ICE'])
-  c['crystal']((x+1.25*scale,y+.28*scale,z+.25*scale),1.0*scale,c['ICE'])
-  c['ell']('Mine snow bank',(x,y+.15*scale,z+1.15*scale),(1.55*scale,.28*scale,.58*scale),snow,seg=14)
+   tube('Mine timber support',(x+side*.9*scale,y+.15*scale,z-1.0*scale),(x+side*.9*scale,y+2.0*scale,z-1.0*scale),.14*scale,mine_wood,r2=.10*scale,verts=8)
+  tube('Mine timber lintel',(x-.95*scale,y+2.0*scale,z-1.0*scale),(x+.95*scale,y+2.0*scale,z-1.0*scale),.16*scale,mine_wood,r2=.11*scale,verts=8)
+  c['crystal']((x-1.3*scale,y+.35*scale,z+.15*scale),1.4*scale,mine_ice)
+  c['crystal']((x+1.25*scale,y+.28*scale,z+.25*scale),1.0*scale,mine_ice)
+  c['ell']('Mine snow bank',(x,y+.15*scale,z+1.15*scale),(1.55*scale,.28*scale,.58*scale),mine_snow,seg=14)
  def logging_site(x,z,scale=1.0):
   y=height(x,z)
   # A dropped axe, boot prints, rough sawhorse and fresh-cut timber make the

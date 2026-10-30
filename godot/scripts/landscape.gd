@@ -13,6 +13,13 @@ func configure(scene: Node3D, id: String) -> void:
    var mat = part.get_active_material(index)
    if mat == null: continue
    var key = str(mat.resource_name).replace("_"," ").to_lower()
+   if "mine " in key or key.begins_with("mine"):
+    var mine_layer=ShaderMaterial.new()
+    mine_layer.shader=preload("res://shaders/foreground.gdshader")
+    mine_layer.set_shader_parameter("tint",Color("bed2dc") if "snow" in key else Color("6398b8") if "ice" in key else Color("10141a") if "darkness" in key else Color("61412a"))
+    mine_layer.render_priority=12
+    part.set_surface_override_material(index,mine_layer)
+    continue
    if "mountain ground" in key:
     var ground=ShaderMaterial.new()
     ground.shader=preload("res://shaders/terrain.gdshader")

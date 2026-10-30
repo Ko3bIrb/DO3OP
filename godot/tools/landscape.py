@@ -194,23 +194,17 @@ def build_landscape(c,mapid):
   meta.setdefault('homes',[]).append([x,y+1,z])
  def ruin(x,z,scale=1.0):
   y=height(x,z)
+  # The ruin is a snow-buried landmark: its visible stonework is white all
+  # the way through, so no detached caps can float above the walls.
   for dx,dz,h in [(-2.4,0,4.2),(2.1,.35,3.0),(.0,1.9,3.5)]:
-   box('Broken ruin wall',(x+dx*scale,y+h*.5,z+dz*scale),(1.35*scale,h,.62*scale),stone,bevel=.10)
-  # Every exposed wall receives a thick, overhanging snow cap.
-  for dx,dz,h in [(-2.4,0,4.2),(2.1,.35,3.0),(.0,1.9,3.5)]:
-   c['ell']('Snow cap on ruin wall',(x+dx*scale,y+h*scale+.08*scale,z+dz*scale),(1.02*scale,.22*scale,.62*scale),snow,seg=12)
+   box('Snow buried ruin wall',(x+dx*scale,y+h*.5,z+dz*scale),(1.35*scale,h,.62*scale),snow,bevel=.10)
   for side in [-1,1]:
-   box('Ruin arch pillar',(x+side*.9*scale,y+2.0*scale,z-1.15*scale),(.72*scale,4.0*scale,.72*scale),stone,bevel=.08)
-   c['ell']('Snow cap on ruin pillar',(x+side*.9*scale,y+4.08*scale,z-1.15*scale),(.58*scale,.18*scale,.52*scale),snow,seg=12)
-  curve('Ruin broken arch',[(x-.95*scale,y+3.8*scale,z-1.15*scale),(x,y+5.0*scale,z-1.15*scale),(x+.95*scale,y+3.8*scale,z-1.15*scale)],.22*scale,stone)
-  for px,py in [(-.95,3.8),(0,5.0),(.95,3.8)]:
-   c['ell']('Snow on ruin arch',(x+px*scale,y+py*scale+.12*scale,z-1.15*scale),(.38*scale,.16*scale,.28*scale),snow,seg=10)
+   box('Snow buried ruin arch pillar',(x+side*.9*scale,y+2.0*scale,z-1.15*scale),(.72*scale,4.0*scale,.72*scale),snow,bevel=.08)
+  curve('Snow buried ruin arch',[(x-.95*scale,y+3.8*scale,z-1.15*scale),(x,y+5.0*scale,z-1.15*scale),(x+.95*scale,y+3.8*scale,z-1.15*scale)],.22*scale,snow)
   for step in range(4):
-   box('Ruin snow stair',(x,y+.12*scale+step*.18*scale,z-2.3*scale+step*.32*scale),(1.5*scale,.22*scale,.62*scale),stone,bevel=.05)
-   box('Snow cover on ruin stair',(x,y+.25*scale+step*.18*scale,z-2.3*scale+step*.32*scale),(1.46*scale,.08*scale,.58*scale),snow,bevel=.025)
-  tube('Collapsed ruin beam',(x-2.3*scale,y+1.8*scale,z-.5*scale),(x+2.1*scale,y+.45*scale,z+1.0*scale),.15*scale,wood,r2=.08*scale,verts=8)
-  tube('Snow on collapsed ruin beam',(x-2.3*scale,y+1.89*scale,z-.5*scale),(x+2.1*scale,y+.54*scale,z+1.0*scale),.19*scale,snow,r2=.10*scale,verts=8)
-  c['ell']('Snow on ruin',(x+.1*scale,y+4.9*scale,z-1.15*scale),(1.55*scale,.22*scale,.75*scale),snow,seg=12)
+   box('Snow buried ruin stair',(x,y+.12*scale+step*.18*scale,z-2.3*scale+step*.32*scale),(1.5*scale,.22*scale,.62*scale),snow,bevel=.05)
+  tube('Snow buried collapsed beam',(x-2.3*scale,y+1.8*scale,z-.5*scale),(x+2.1*scale,y+.45*scale,z+1.0*scale),.17*scale,snow,r2=.10*scale,verts=8)
+  c['ell']('Snow mound on ruin',(x+.1*scale,y+4.9*scale,z-1.15*scale),(1.55*scale,.22*scale,.75*scale),snow,seg=12)
  def gargoyle(x,z,scale=1.0):
   y=height(x,z)
   # A squat dragon statue: haunches, muzzle, horns, wings and a tail read as
@@ -230,17 +224,37 @@ def build_landscape(c,mapid):
   c['ell']('Snow dragon crown',(x,y+3.15*scale,z-.35*scale),(.62*scale,.14*scale,.44*scale),snow,seg=12)
  def windmill(x,z,scale=1.0):
   y=height(x,z)
-  box('Abandoned mill tower',(x,y+1.8*scale,z),(2.4*scale,3.6*scale,2.5*scale),wood,bevel=.10)
-  # The doorway and stopped blades are on the positive-Z face, toward the
-  # elevated gameplay camera.
-  box('Mill dark doorway',(x,y+.85*scale,z+1.28*scale),(.62*scale,1.35*scale,.06),c['DARK'],bevel=.03)
-  roof=[(x-1.5*scale,y+3.6*scale,z-1.5*scale),(x+1.5*scale,y+3.6*scale,z-1.5*scale),(x,y+4.8*scale,z-1.5*scale),(x-1.5*scale,y+3.6*scale,z+1.5*scale),(x+1.5*scale,y+3.6*scale,z+1.5*scale),(x,y+4.8*scale,z+1.5*scale)]
-  mesh('Snow covered mill roof',roof,[(0,2,5,3),(2,1,4,5),(0,1,2),(3,5,4)],snow)
-  hub=Vector((x,y+2.55*scale,z+1.43*scale))
-  for angle in [0,math.pi*.5,math.pi,math.pi*1.5]:
-   end=hub+Vector((math.cos(angle)*1.65*scale,math.sin(angle)*1.65*scale,0))
-   tube('Stopped mill blade',hub,end,.075*scale,wood,r2=.035*scale,verts=6)
-  c['ell']('Mill axle',tuple(hub),(.18*scale,.18*scale,.10*scale),stone,seg=10)
+  # A tapered wooden tower and four broad lattice sails match the traditional
+  # windmill silhouette and face the elevated camera on the positive-Z side.
+  sides=12;base_r=2.10*scale;top_r=1.15*scale;bottom=y+.08*scale;top=y+4.85*scale
+  vv=[];ff=[]
+  for yy,rr in [(bottom,base_r),(top,top_r)]:
+   for i in range(sides):
+    a=math.tau*i/sides;vv.append((x+math.cos(a)*rr,yy,z+math.sin(a)*rr))
+  for i in range(sides):
+   n=(i+1)%sides;ff.append((i,n,sides+n,sides+i))
+  ff.append(tuple(range(sides-1,-1,-1)));ff.append(tuple(range(sides,2*sides)))
+  mesh('Tapered mill tower',vv,ff,wood,smooth=True)
+  for i in range(4):
+   a=i*math.pi*.5+math.pi*.25
+   tube('Mill tower timber rib',(x+math.cos(a)*base_r*.98,bottom,z+math.sin(a)*base_r*.98),(x+math.cos(a)*top_r,top,z+math.sin(a)*top_r),.075*scale,c['DARK'],r2=.045*scale,verts=6)
+  # Snow cap over the small roof, kept seated directly on the tower rim.
+  roof=[(x+math.cos(math.tau*i/sides)*top_r,top,z+math.sin(math.tau*i/sides)*top_r) for i in range(sides)]
+  roof.append((x,top+.72*scale,z))
+  mesh('Snow cap on mill',roof,[(i,(i+1)%sides,sides) for i in range(sides)],snow,smooth=True)
+  box('Mill dark doorway',(x,y+1.0*scale,z+base_r*.98),(.72*scale,1.65*scale,.08),c['DARK'],bevel=.04)
+  hub=Vector((x,top-.05*scale,z+top_r*1.32))
+  for blade in range(4):
+   angle=blade*math.pi*.5+math.pi*.25;direction=Vector((math.cos(angle),math.sin(angle),0));across=Vector((-math.sin(angle),math.cos(angle),0))
+   root=hub+direction*.30*scale;tip=hub+direction*3.15*scale
+   root_w=.25*scale;tip_w=.62*scale
+   for side in [-1,1]:
+    tube('Mill lattice sail rail',root+across*root_w*side,tip+across*tip_w*side,.075*scale,wood,r2=.045*scale,verts=6)
+   tube('Mill lattice sail spine',root,tip,.07*scale,wood,r2=.04*scale,verts=6)
+   for fraction in [.25,.5,.75]:
+    center=root.lerp(tip,fraction);half= root_w+(tip_w-root_w)*fraction
+    tube('Mill lattice sail brace',center-across*half,center+across*half,.045*scale,wood,r2=.025*scale,verts=6)
+  c['ell']('Mill axle',tuple(hub),(.22*scale,.22*scale,.13*scale),stone,seg=12)
  def frozen_mine(x,z,scale=1.0):
   y=height(x,z)
   box('Frozen mine darkness',(x,y+1.05*scale,z),(2.5*scale,2.0*scale,.30*scale),c['EYE'],bevel=.10)
@@ -279,7 +293,6 @@ def build_landscape(c,mapid):
   # Replace the road-blocking third ruin with a raised snow-rock cluster.
   for rx,rz,rs in [(-47,-25,2.1),(-42,-23,1.45),(-45,-30,1.0)]:
    c['rock']((rx,height(rx,rz),rz),rs,True)
-  for gx,gz in [(-60,-12),(-60,12)]:gargoyle(gx,gz,1.6)
   logging_site(27,27,1.2)
   for x,z,sc in [(31,6,.75),(36,10,1.05),(41,7,.9),(45,13,.65),(32,14,.65)]:house(x,z,sc)
   # Stone crossing extends into both banks; paving disappears below the abutments.
@@ -352,10 +365,10 @@ def build_landscape(c,mapid):
  # landmark clearings reserved so foliage and rocks never grow through them.
  reserved=[
   (48,-34,9), (58,-35,9), (68,-49,10), (27,27,10), (-30,-34,5),
-  (-39,-28,9), (-45,-26,8), (-40,18,8), (-60,-12,8), (-60,12,8),
+  (-39,-28,9), (-45,-26,8), (-40,18,8),
   (31,6,5), (36,10,6), (41,7,5), (45,13,5), (32,14,5),
   (-6,15,8), (0,-20,4), (-5,-4,5), (route[0][0],route[0][2],14),
-  (route[-1][0],route[-1][2],14)
+  (route[-1][0],route[-1][2],14), (route[0][0]-10,route[0][2],8)
  ] if ice else [(36,10,10),(-5,3,7),(route[0][0],route[0][2],14),(route[-1][0],route[-1][2],14)]
  occupied=[(x,z,r) for x,z,r in reserved]
  def clear_of_props(x,z,radius):
@@ -365,8 +378,25 @@ def build_landscape(c,mapid):
   if min(math.hypot(x-s['position'][0],z-s['position'][2]) for s in spots)<3.1:return False
   if any(math.hypot(x-a,z-b)<r for a,b,r in reserved):return False
   if min(math.hypot(x-route[k][0],z-route[k][2]) for k in [0,-1])<8:return False
+  # The central cascade is a visible landmark; keep every instanced rock and
+  # tree outside its water channel so nothing appears to float in the fall.
+  if ice and -50<z<-30 and river_distance(x,z)<4.8:return False
   return height(x,z)>(-.75 if ice else -1.0)
+ def add_snow_rock(x,z,sc):
+  clearance=max(1.0,sc*.80)
+  if not allowed(x,z,7.5) or not clear_of_props(x,z,clearance):return False
+  meta['instances'].append({'key':'prop_snowrock_'+str(random.randrange(3)),'position':[x,height(x,z)-.15,z],'scale':[sc*random.uniform(.7,1.7),sc*random.uniform(.7,1.7),sc*random.uniform(.8,1.4)],'yaw':random.uniform(0,math.tau)})
+  occupied.append((x,z,clearance));return True
  if ice:
+  # Deliberate empty clearings around the enemy gate and on both road corners
+  # receive additional boulders. The same route/landmark tests keep these
+  # pockets off the walkable tiles and out of every existing prop.
+  for cx,cz,radius,count in [(-73,-14,8,26),(-73,14,8,26),(-31,-42,8,28),(31,-42,8,28)]:
+   placed=0
+   for _ in range(count*8):
+    if placed>=count:break
+    a=random.uniform(0,math.tau);r=radius*math.sqrt(random.random());x=cx+math.cos(a)*r;z=cz+math.sin(a)*r
+    if add_snow_rock(x,z,random.uniform(.75,2.1)):placed+=1
   clusters=[(-48,12,9,60),(-36,-3,7,19),(28,-3,8,22),(48,18,10,32),(-54,-35,8,22),(57,-37,9,25),(-35,-48,8,21),(37,-46,7,19),(-23,29,9,23),(23,29,9,24)]
   for cx,cz,radius,count in clusters:
    for _ in range(count*4):

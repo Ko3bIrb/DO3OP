@@ -125,9 +125,9 @@ def build_landscape(c,mapid):
  vv=[]
  for i,p in enumerate(samples):
   tangent=(samples[min(i+1,len(samples)-1)]-samples[max(0,i-1)]).normalized();normal=Vector((-tangent.z,0,tangent.x))
-  width=1.73+.12*math.sin(i*.61)+.06*math.sin(i*1.8)
-  for u in [-1,-.82,0,.82,1]:
-   vv.append(p+normal*width*u+Vector((0,.095-.065*abs(u),0)))
+  width=1.70
+  for u in [-1,-.5,0,.5,1]:
+   vv.append(p+normal*width*u+Vector((0,.105-.045*abs(u),0)))
  ff=[]
  for i in range(len(samples)-1):
   if ice and abs((samples[i].x+samples[i+1].x)*.5)<5.5 and 13<samples[i].z<17:continue
@@ -263,7 +263,7 @@ def build_landscape(c,mapid):
   # and two gargoyles watching the enemy gate.
   for rx,rz,rs in [(-39,-28,2.4),(-40,18,2.0)]:ruin(rx,rz,rs)
   # Replace the road-blocking third ruin with a raised snow-rock cluster.
-  for rx,rz,rs in [(-26,-31,2.1),(-21,-30,1.45),(-28,-27,1.0)]:
+  for rx,rz,rs in [(-47,-25,2.1),(-42,-23,1.45),(-45,-30,1.0)]:
    c['rock']((rx,height(rx,rz),rz),rs,True)
   for gx,gz in [(-60,-12),(-60,12)]:gargoyle(gx,gz,1.6)
   logging_site(27,27,1.2)
@@ -338,7 +338,7 @@ def build_landscape(c,mapid):
  # landmark clearings reserved so foliage and rocks never grow through them.
  reserved=[
   (48,-34,9), (58,-35,9), (68,-49,10), (27,27,10),
-  (-39,-28,9), (-26,-31,7), (-40,18,8), (-60,-12,8), (-60,12,8),
+  (-39,-28,9), (-45,-26,8), (-40,18,8), (-60,-12,8), (-60,12,8),
   (31,6,5), (36,10,6), (41,7,5), (45,13,5), (32,14,5),
   (-6,15,8), (0,-20,4), (-5,-4,5), (route[0][0],route[0][2],14),
   (route[-1][0],route[-1][2],14)
@@ -369,7 +369,7 @@ def build_landscape(c,mapid):
   for _ in range(10000):
    if tree_count>=900:break
    x=random.uniform(-87,87);z=random.uniform(-69,43)
-   if not allowed(x,z,4.6):continue
+   if not allowed(x,z,5.2):continue
    density=.38+.22*math.sin(x*.15+math.sin(z*.2))
    if random.random()>density:continue
    if height(x,z)>23:continue
@@ -381,7 +381,7 @@ def build_landscape(c,mapid):
  for side in [-1,1]:
   for j in range(30):
    z=-40+j*2.4;x=side*(15.5+2.2*math.sin(z*.19))
-   if not allowed(x,z,5.2):continue
+   if not allowed(x,z,7.5):continue
    sc=random.uniform(1.2,3.8)
    if not clear_of_props(x,z,max(1.0,sc*.75)):continue
    meta['instances'].append({'key':('prop_snowrock_' if ice else 'prop_basalt_')+str(j%3),'position':[x,height(x,z)-sc*.25,z],'scale':[sc,sc*random.uniform(1,2),sc*.8],'yaw':random.uniform(0,math.tau)})
@@ -400,7 +400,7 @@ def build_landscape(c,mapid):
    for j in range(5):box('Ruined crenel',(x+math.cos(j*math.tau/5)*1.3,y+5,z+math.sin(j*math.tau/5)*1.3),(.5,1,.5),basalt)
  for _ in range(2600):
   x=random.uniform(-69,69);z=random.uniform(-53,35)
-  if not allowed(x,z,5.5):continue
+  if not allowed(x,z,7.5):continue
   sc=random.uniform(.55,2.2);clearance=max(1.0,sc*.80)
   if not clear_of_props(x,z,clearance):continue
   meta['instances'].append({'key':('prop_snowrock_' if ice else 'prop_basalt_')+str(random.randrange(3)),'position':[x,height(x,z)-.15,z],'scale':[sc*random.uniform(.7,1.7),sc*random.uniform(.7,1.7),sc*random.uniform(.8,1.4)],'yaw':random.uniform(0,math.tau)})

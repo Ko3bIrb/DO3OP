@@ -86,8 +86,8 @@ def build_landscape(c,mapid):
   # The source runs through the mountain and spills over a real rock lip.
   # Its upper end stays above the camera framing; only the formed cascade is
   # visible before it widens into the lake.
-  lip_z=-45.5;lip_y=13.95;source_y=70.0
-  for strand,(cx,width,top,bottom,phase) in enumerate([(-2.0,2.4,-120.0,-33.2,.0),(.0,1.9,-119.0,-32.4,1.5),(2.1,1.2,-118.0,-33.8,3.2)]):
+  lip_z=-45.5;lip_y=13.95;source_y=100.0
+  for strand,(cx,width,top,bottom,phase) in enumerate([(-2.0,2.4,-170.0,-33.2,.0),(.0,1.9,-169.0,-32.4,1.5),(2.1,1.2,-168.0,-33.8,3.2)]):
    vv=[];ff=[];steps=74
    for i in range(steps+1):
     t=i/steps;z=top+(bottom-top)*t
@@ -114,8 +114,8 @@ def build_landscape(c,mapid):
   # stream becomes visible only after it crosses this face, so its source is
   # visibly attached to rock instead of starting as a free vertical plane.
   cliff_x=[-13,-10,-7,-4,0,4,7,10,13]
-  cliff_top=[42,55,63,67,66,67,63,55,42]
-  cliff_front=-85.0;cliff_back=-87.0;cliff_bottom=-.75
+  cliff_top=[70,85,95,100,99,100,95,85,70]
+  cliff_front=-120.0;cliff_back=-122.0;cliff_bottom=-.75
   cliff_v=[];cliff_f=[]
   for z in [cliff_front,cliff_back]:
    for x,top_y in zip(cliff_x,cliff_top):cliff_v += [(x,cliff_bottom,z),(x,top_y,z)]

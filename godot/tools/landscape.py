@@ -294,8 +294,8 @@ def build_landscape(c,mapid):
     center=root.lerp(tip,fraction);half= root_w+(tip_w-root_w)*fraction
     tube('Mill lattice sail brace',center-across*half,center+across*half,.045*scale,wood,r2=.025*scale,verts=6)
   c['ell']('Mill axle',tuple(hub),(.22*scale,.22*scale,.13*scale),stone,seg=12)
- def frozen_mine(x,z,scale=1.0):
-  y=height(x,z)
+ def frozen_mine(x,z,scale=1.0,y_offset=0.0):
+  y=height(x,z)+y_offset
   box('Frozen mine darkness',(x,y+1.05*scale,z),(2.5*scale,2.0*scale,.30*scale),mine_dark,bevel=.10)
   for side in [-1,1]:
    tube('Mine timber support',(x+side*.9*scale,y+.15*scale,z-1.0*scale),(x+side*.9*scale,y+2.0*scale,z-1.0*scale),.14*scale,mine_wood,r2=.10*scale,verts=8)
@@ -509,7 +509,7 @@ def build_landscape(c,mapid):
    return None
   mine_at=free_special((49.5,-81.0),5.0,4.0,3.8)
   if mine_at:
-   frozen_mine(mine_at[0],mine_at[1],1.55);occupied.append((mine_at[0],mine_at[1],4.0));meta.setdefault('special_landmarks',[]).append({'kind':'mine','position':[mine_at[0],height(mine_at[0],mine_at[1]),mine_at[1]]})
+   frozen_mine(mine_at[0],mine_at[1],1.55,-2.5);occupied.append((mine_at[0],mine_at[1],4.0));meta.setdefault('special_landmarks',[]).append({'kind':'mine','position':[mine_at[0],height(mine_at[0],mine_at[1])-2.5,mine_at[1]]})
   for center,site_scale,clearance in [((23,20.5),.90,3.4),((29.5,30.5),1.15,4.6)]:
    log_at=free_special(center,4.2,clearance,3.8)
    if log_at:

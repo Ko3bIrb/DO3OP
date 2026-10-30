@@ -121,39 +121,43 @@ def build_landscape(c,mapid):
   for j in range(1,9):
    t=j/8;samples.append(before*(1-t)**2+b*2*(1-t)*t+after*t*t)
  append_line(samples[-1],controls[-1])
- # Three strips provide a broken, slightly sunken edge and a crowned paving surface.
- vv=[]
- for i,p in enumerate(samples):
-  tangent=(samples[min(i+1,len(samples)-1)]-samples[max(0,i-1)]).normalized();normal=Vector((-tangent.z,0,tangent.x))
-  width=1.70
-  for u in [-1,-.5,0,.5,1]:
-   vv.append(p+normal*width*u+Vector((0,.105-.045*abs(u),0)))
- ff=[]
+ # Small, even paving stones leave narrow joints in both directions. Each
+ # segment has five mirrored rows, so the route reads as a path of tiles rather
+ # than one continuous slab. Snow buries individual stones at random while the
+ # bridge stays clear of both paving and drifts.
+ tile_v=[];tile_f=[];snow_v=[];snow_f=[]
+ row_centers=[-1.28,-.64,0,.64,1.28]
  for i in range(len(samples)-1):
-  if ice and abs((samples[i].x+samples[i+1].x)*.5)<5.5 and 13<samples[i].z<17:continue
-  for j in range(4):
-   k=i*5+j;ff.append((k,k+5,k+6,k+1))
- mesh('Worn connected causeway',vv,ff,roadmat,smooth=True)
- # Snow arrives in broken tile-sized drifts. The exposed road stays readable,
- # and the bridge remains stone instead of receiving a white carpet.
- snow_v=[];snow_f=[]
- for i in range(0,len(samples)-1,2):
   p=samples[i];nxt=samples[i+1]
-  if ice and abs((p.x+nxt.x)*.5)<6.0 and 13<((p.z+nxt.z)*.5)<17:continue
-  if random.random()<.34:continue
+  midpoint=(p+nxt)*.5
+  if ice and abs(midpoint.x)<5.5 and 13<midpoint.z<17:continue
   tangent=(nxt-p).normalized();normal=Vector((-tangent.z,0,tangent.x))
-  center=p+tangent*random.uniform(.12,.42)+normal*random.uniform(-.58,.58)
-  half_len=random.uniform(.25,.62);half_width=random.uniform(.20,.52)
-  drift_y=center.y+.17+random.uniform(-.015,.025)
-  base=len(snow_v)
-  snow_v.extend([
-   center-tangent*half_len-normal*half_width+Vector((0,drift_y,0)),
-   center+tangent*half_len-normal*half_width+Vector((0,drift_y+.015,0)),
-   center+tangent*half_len+normal*half_width+Vector((0,drift_y+.01,0)),
-   center-tangent*half_len+normal*half_width+Vector((0,drift_y,0))
-  ])
-  snow_f.append((base,base+1,base+2,base+3))
- mesh('Snow patches on route',snow_v,snow_f,snow,smooth=True)
+  seg_len=(nxt-p).length
+  half_len=min(.235,seg_len*.39)
+  for u in row_centers:
+   center=midpoint+normal*u
+   half_width=.265
+   y=center.y+.105+random.uniform(-.006,.008)
+   base=len(tile_v)
+   tile_v.extend([
+    center-tangent*half_len-normal*half_width+Vector((0,y,0)),
+    center+tangent*half_len-normal*half_width+Vector((0,y+.008,0)),
+    center+tangent*half_len+normal*half_width+Vector((0,y+.006,0)),
+    center-tangent*half_len+normal*half_width+Vector((0,y,0))
+   ])
+   tile_f.append((base,base+1,base+2,base+3))
+   # Snow covers complete small tiles, leaving an irregular but readable route.
+   if random.random()<.39:
+    snow_base=len(snow_v);snow_y=y+.045
+    snow_v.extend([
+     center-tangent*(half_len*.98)-normal*(half_width*.96)+Vector((0,snow_y,0)),
+     center+tangent*(half_len*.98)-normal*(half_width*.96)+Vector((0,snow_y+.008,0)),
+     center+tangent*(half_len*.98)+normal*(half_width*.96)+Vector((0,snow_y+.006,0)),
+     center-tangent*(half_len*.98)+normal*(half_width*.96)+Vector((0,snow_y,0))
+    ])
+    snow_f.append((snow_base,snow_base+1,snow_base+2,snow_base+3))
+ mesh('Small symmetric route tiles',tile_v,tile_f,roadmat,smooth=True)
+ mesh('Snow covered route tiles',snow_v,snow_f,snow,smooth=True)
  # Lanterns mark key bends; loose paving blocks along every segment created
  # the chain of dark route points visible from the game camera.
  for i in range(0,len(samples),42):
@@ -192,12 +196,20 @@ def build_landscape(c,mapid):
   y=height(x,z)
   for dx,dz,h in [(-2.4,0,4.2),(2.1,.35,3.0),(.0,1.9,3.5)]:
    box('Broken ruin wall',(x+dx*scale,y+h*.5,z+dz*scale),(1.35*scale,h,.62*scale),stone,bevel=.10)
+  # Every exposed wall receives a thick, overhanging snow cap.
+  for dx,dz,h in [(-2.4,0,4.2),(2.1,.35,3.0),(.0,1.9,3.5)]:
+   c['ell']('Snow cap on ruin wall',(x+dx*scale,y+h*scale+.08*scale,z+dz*scale),(1.02*scale,.22*scale,.62*scale),snow,seg=12)
   for side in [-1,1]:
    box('Ruin arch pillar',(x+side*.9*scale,y+2.0*scale,z-1.15*scale),(.72*scale,4.0*scale,.72*scale),stone,bevel=.08)
+   c['ell']('Snow cap on ruin pillar',(x+side*.9*scale,y+4.08*scale,z-1.15*scale),(.58*scale,.18*scale,.52*scale),snow,seg=12)
   curve('Ruin broken arch',[(x-.95*scale,y+3.8*scale,z-1.15*scale),(x,y+5.0*scale,z-1.15*scale),(x+.95*scale,y+3.8*scale,z-1.15*scale)],.22*scale,stone)
+  for px,py in [(-.95,3.8),(0,5.0),(.95,3.8)]:
+   c['ell']('Snow on ruin arch',(x+px*scale,y+py*scale+.12*scale,z-1.15*scale),(.38*scale,.16*scale,.28*scale),snow,seg=10)
   for step in range(4):
    box('Ruin snow stair',(x,y+.12*scale+step*.18*scale,z-2.3*scale+step*.32*scale),(1.5*scale,.22*scale,.62*scale),stone,bevel=.05)
+   box('Snow cover on ruin stair',(x,y+.25*scale+step*.18*scale,z-2.3*scale+step*.32*scale),(1.46*scale,.08*scale,.58*scale),snow,bevel=.025)
   tube('Collapsed ruin beam',(x-2.3*scale,y+1.8*scale,z-.5*scale),(x+2.1*scale,y+.45*scale,z+1.0*scale),.15*scale,wood,r2=.08*scale,verts=8)
+  tube('Snow on collapsed ruin beam',(x-2.3*scale,y+1.89*scale,z-.5*scale),(x+2.1*scale,y+.54*scale,z+1.0*scale),.19*scale,snow,r2=.10*scale,verts=8)
   c['ell']('Snow on ruin',(x+.1*scale,y+4.9*scale,z-1.15*scale),(1.55*scale,.22*scale,.75*scale),snow,seg=12)
  def gargoyle(x,z,scale=1.0):
   y=height(x,z)
@@ -219,10 +231,12 @@ def build_landscape(c,mapid):
  def windmill(x,z,scale=1.0):
   y=height(x,z)
   box('Abandoned mill tower',(x,y+1.8*scale,z),(2.4*scale,3.6*scale,2.5*scale),wood,bevel=.10)
-  box('Mill dark doorway',(x,y+.85*scale,z-1.28*scale),(.62*scale,1.35*scale,.06),c['DARK'],bevel=.03)
+  # The doorway and stopped blades are on the positive-Z face, toward the
+  # elevated gameplay camera.
+  box('Mill dark doorway',(x,y+.85*scale,z+1.28*scale),(.62*scale,1.35*scale,.06),c['DARK'],bevel=.03)
   roof=[(x-1.5*scale,y+3.6*scale,z-1.5*scale),(x+1.5*scale,y+3.6*scale,z-1.5*scale),(x,y+4.8*scale,z-1.5*scale),(x-1.5*scale,y+3.6*scale,z+1.5*scale),(x+1.5*scale,y+3.6*scale,z+1.5*scale),(x,y+4.8*scale,z+1.5*scale)]
   mesh('Snow covered mill roof',roof,[(0,2,5,3),(2,1,4,5),(0,1,2),(3,5,4)],snow)
-  hub=Vector((x,y+2.55*scale,z-1.43*scale))
+  hub=Vector((x,y+2.55*scale,z+1.43*scale))
   for angle in [0,math.pi*.5,math.pi,math.pi*1.5]:
    end=hub+Vector((math.cos(angle)*1.65*scale,math.sin(angle)*1.65*scale,0))
    tube('Stopped mill blade',hub,end,.075*scale,wood,r2=.035*scale,verts=6)
@@ -337,7 +351,7 @@ def build_landscape(c,mapid):
  # Clustered, varied vegetation/stone props, instanced by the runtime. Keep
  # landmark clearings reserved so foliage and rocks never grow through them.
  reserved=[
-  (48,-34,9), (58,-35,9), (68,-49,10), (27,27,10),
+  (48,-34,9), (58,-35,9), (68,-49,10), (27,27,10), (-30,-34,5),
   (-39,-28,9), (-45,-26,8), (-40,18,8), (-60,-12,8), (-60,12,8),
   (31,6,5), (36,10,6), (41,7,5), (45,13,5), (32,14,5),
   (-6,15,8), (0,-20,4), (-5,-4,5), (route[0][0],route[0][2],14),

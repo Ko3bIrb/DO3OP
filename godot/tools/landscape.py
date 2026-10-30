@@ -110,6 +110,27 @@ def build_landscape(c,mapid):
   box('Waterfall wet cliff lip',(0,13.15,-46.9),(8.4,1.6,2.8),slate,bevel=.22)
   box('Waterfall left shoulder',(-4.25,10.6,-46.7),(2.0,5.0,3.6),slate,bevel=.24)
   box('Waterfall right shoulder',(4.25,10.6,-46.7),(2.0,5.0,3.6),slate,bevel=.24)
+  # A jagged headwall hides the upstream section inside the mountain. The
+  # stream becomes visible only after it crosses this face, so its source is
+  # visibly attached to rock instead of starting as a free vertical plane.
+  cliff_x=[-9,-7,-5,-3,0,3,5,7,9]
+  cliff_top=[18,25,30,32,31,32,30,25,18]
+  cliff_front=-49.35;cliff_back=-51.0;cliff_bottom=-.75
+  cliff_v=[];cliff_f=[]
+  for z in [cliff_front,cliff_back]:
+   for x,top_y in zip(cliff_x,cliff_top):cliff_v += [(x,cliff_bottom,z),(x,top_y,z)]
+  stride=len(cliff_x)*2
+  for i in range(len(cliff_x)-1):
+   a=i*2;b=(i+1)*2
+   cliff_f.append((a,b,b+1,a+1))
+   cliff_f.append((stride+a+1,stride+b+1,stride+b,stride+a))
+   cliff_f.append((a+1,stride+a+1,stride+b+1,b+1))
+  mesh('Waterfall mountain headwall',cliff_v,cliff_f,slate,smooth=False)
+  rim_v=[];rim_f=[]
+  for x,top_y in zip(cliff_x,cliff_top):rim_v.append((x,top_y+.42,cliff_front-.10))
+  for i in range(len(cliff_x)-1):rim_f.append((i,i+1,i+1+len(cliff_x),i+len(cliff_x)))
+  rim_v += [(x,top_y+.05,cliff_front+.02) for x,top_y in zip(cliff_x,cliff_top)]
+  mesh('Waterfall snow headwall rim',rim_v,rim_f,snow,smooth=False)
   meta['mist'] += [[-1,-.3,-33],[1,-.3,-33.8]]
  else:
   # Several molten tributaries crawl down the volcano instead of a straight stripe.

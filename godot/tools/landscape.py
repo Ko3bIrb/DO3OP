@@ -83,7 +83,10 @@ def build_landscape(c,mapid):
  basin_surface()
  # A stepped rock lip breaks the waterfall into several unequal falling streams.
  if ice:
-  for strand,(cx,width,top,bottom,phase) in enumerate([(-1.2,1.05,-46.8,-33.2,.0),(.9,.7,-46.1,-32.4,1.5),(2.0,.38,-44.8,-33.8,3.2)]):
+  # Start well above the camera framing. The upper source is deliberately
+  # outside the game view so the streams enter from the mountain instead of
+  # exposing an artificial, floating beginning.
+  for strand,(cx,width,top,bottom,phase) in enumerate([(-1.2,1.05,-56.5,-33.2,.0),(.9,.7,-55.6,-32.4,1.5),(2.0,.38,-54.4,-33.8,3.2)]):
    vv=[];ff=[];steps=74
    for i in range(steps+1):
     t=i/steps;z=top+(bottom-top)*t
@@ -95,7 +98,9 @@ def build_landscape(c,mapid):
    for i in range(steps):
     for j in range(4):
      k=i*5+j;ff.append((k,k+5,k+6,k+1))
-   c['emit']([tuple(c['V'](v)) for v in vv],ff,cascade,uv=[(j/4,i/steps) for i in range(steps+1) for j in range(5)],smooth=True)
+   # UV.y is one at the hidden top and zero at the pool. The waterfall
+   # shader advances this coordinate toward zero, matching the fall direction.
+   c['emit']([tuple(c['V'](v)) for v in vv],ff,cascade,uv=[(j/4,1.0-i/steps) for i in range(steps+1) for j in range(5)],smooth=True)
   meta['mist'] += [[-1,-.3,-33],[1,-.3,-33.8]]
  else:
   # Several molten tributaries crawl down the volcano instead of a straight stripe.

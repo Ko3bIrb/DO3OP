@@ -134,18 +134,26 @@ def build_landscape(c,mapid):
   for j in range(4):
    k=i*5+j;ff.append((k,k+5,k+6,k+1))
  mesh('Worn connected causeway',vv,ff,roadmat,smooth=True)
- # A continuous, uneven snow blanket makes the route legible from the full
- # game camera while leaving its width and bends readable for the enemies.
- snow_v=[]
- for i,p in enumerate(samples):
-  tangent=(samples[min(i+1,len(samples)-1)]-samples[max(0,i-1)]).normalized();normal=Vector((-tangent.z,0,tangent.x))
-  for u in [-.96,-.35,.35,.96]:
-   snow_v.append(p+normal*1.69*u+Vector((0,.17+.025*math.sin(i*1.7+u*3),0)))
- snow_f=[]
- for i in range(len(samples)-1):
-  for j in range(3):
-   k=i*4+j;snow_f.append((k,k+4,k+5,k+1))
- mesh('Snow covered route',snow_v,snow_f,snow,smooth=True)
+ # Snow arrives in broken tile-sized drifts. The exposed road stays readable,
+ # and the bridge remains stone instead of receiving a white carpet.
+ snow_v=[];snow_f=[]
+ for i in range(0,len(samples)-1,2):
+  p=samples[i];nxt=samples[i+1]
+  if ice and abs((p.x+nxt.x)*.5)<6.0 and 13<((p.z+nxt.z)*.5)<17:continue
+  if random.random()<.34:continue
+  tangent=(nxt-p).normalized();normal=Vector((-tangent.z,0,tangent.x))
+  center=p+tangent*random.uniform(.12,.42)+normal*random.uniform(-.58,.58)
+  half_len=random.uniform(.25,.62);half_width=random.uniform(.20,.52)
+  drift_y=center.y+.17+random.uniform(-.015,.025)
+  base=len(snow_v)
+  snow_v.extend([
+   center-tangent*half_len-normal*half_width+Vector((0,drift_y,0)),
+   center+tangent*half_len-normal*half_width+Vector((0,drift_y+.015,0)),
+   center+tangent*half_len+normal*half_width+Vector((0,drift_y+.01,0)),
+   center-tangent*half_len+normal*half_width+Vector((0,drift_y,0))
+  ])
+  snow_f.append((base,base+1,base+2,base+3))
+ mesh('Snow patches on route',snow_v,snow_f,snow,smooth=True)
  # Lanterns mark key bends; loose paving blocks along every segment created
  # the chain of dark route points visible from the game camera.
  for i in range(0,len(samples),42):
@@ -182,18 +190,32 @@ def build_landscape(c,mapid):
   meta.setdefault('homes',[]).append([x,y+1,z])
  def ruin(x,z,scale=1.0):
   y=height(x,z)
-  for dx,dz,h in [(-1.5,0,2.8),(1.2,.35,1.7),(.1,1.35,2.2)]:
-   box('Broken ruin wall',(x+dx*scale,y+h*.5,z+dz*scale),(1.15*scale,h,.48*scale),stone,bevel=.08)
-  tube('Collapsed ruin beam',(x-1.6*scale,y+1.1*scale,z-.4*scale),(x+1.4*scale,y+.35*scale,z+.8*scale),.12*scale,wood,r2=.07*scale,verts=8)
-  c['ell']('Snow on ruin',(x+.1*scale,y+2.25*scale,z),(1.2*scale,.16*scale,.65*scale),snow,seg=12)
+  for dx,dz,h in [(-2.4,0,4.2),(2.1,.35,3.0),(.0,1.9,3.5)]:
+   box('Broken ruin wall',(x+dx*scale,y+h*.5,z+dz*scale),(1.35*scale,h,.62*scale),stone,bevel=.10)
+  for side in [-1,1]:
+   box('Ruin arch pillar',(x+side*.9*scale,y+2.0*scale,z-1.15*scale),(.72*scale,4.0*scale,.72*scale),stone,bevel=.08)
+  curve('Ruin broken arch',[(x-.95*scale,y+3.8*scale,z-1.15*scale),(x,y+5.0*scale,z-1.15*scale),(x+.95*scale,y+3.8*scale,z-1.15*scale)],.22*scale,stone)
+  for step in range(4):
+   box('Ruin snow stair',(x,y+.12*scale+step*.18*scale,z-2.3*scale+step*.32*scale),(1.5*scale,.22*scale,.62*scale),stone,bevel=.05)
+  tube('Collapsed ruin beam',(x-2.3*scale,y+1.8*scale,z-.5*scale),(x+2.1*scale,y+.45*scale,z+1.0*scale),.15*scale,wood,r2=.08*scale,verts=8)
+  c['ell']('Snow on ruin',(x+.1*scale,y+4.9*scale,z-1.15*scale),(1.55*scale,.22*scale,.75*scale),snow,seg=12)
  def gargoyle(x,z,scale=1.0):
   y=height(x,z)
-  c['ell']('Snow gargoyle body',(x,y+1.15*scale,z),(.72*scale,1.15*scale,.56*scale),stone,seg=12)
-  c['ell']('Snow gargoyle head',(x,y+2.15*scale,z-.08*scale),(.48*scale,.42*scale,.42*scale),stone,seg=12)
+  # A squat dragon statue: haunches, muzzle, horns, wings and a tail read as
+  # a creature instead of a rounded vessel when seen from the game camera.
+  c['ell']('Snow dragon torso',(x,y+1.25*scale,z),(.95*scale,1.25*scale,.72*scale),stone,seg=14)
   for side in [-1,1]:
-   curve('Snow gargoyle wing',[(x+side*.35*scale,y+1.55*scale,z),(x+side*1.15*scale,y+2.05*scale,z+.12*scale),(x+side*1.45*scale,y+1.05*scale,z+.28*scale)],.11*scale,stone)
-   tube('Snow gargoyle claw',(x+side*.28*scale,y+.65*scale,z),(x+side*.58*scale,y+.18*scale,z-.25*scale),.08*scale,stone,r2=.035*scale,verts=6)
-  c['ell']('Gargoyle snow cap',(x,y+2.48*scale,z),( .52*scale,.10*scale,.40*scale),snow,seg=10)
+   c['ell']('Snow dragon haunch',(x+side*.62*scale,y+.85*scale,z+.38*scale),(.50*scale,.72*scale,.58*scale),stone,seg=12)
+   tube('Snow dragon foreleg',(x+side*.42*scale,y+1.0*scale,z-.35*scale),(x+side*.55*scale,y+.18*scale,z-.75*scale),.16*scale,stone,r2=.09*scale,verts=8)
+   c['ell']('Snow dragon paw',(x+side*.55*scale,y+.13*scale,z-.86*scale),(.30*scale,.14*scale,.42*scale),snow,seg=10)
+  c['ell']('Snow dragon neck',(x,y+2.0*scale,z-.18*scale),(.48*scale,.85*scale,.45*scale),stone,seg=12)
+  c['ell']('Snow dragon head',(x,y+2.65*scale,z-.42*scale),(.62*scale,.52*scale,.58*scale),stone,seg=14)
+  c['ell']('Snow dragon muzzle',(x,y+2.52*scale,z-.88*scale),(.40*scale,.26*scale,.40*scale),snow,seg=12)
+  for side in [-1,1]:
+   curve('Snow dragon wing',[(x+side*.35*scale,y+1.55*scale,z),(x+side*1.45*scale,y+3.0*scale,z+.15*scale),(x+side*2.2*scale,y+1.75*scale,z+.45*scale),(x+side*1.6*scale,y+1.0*scale,z+.55*scale)],.16*scale,stone)
+   tube('Snow dragon horn',(x+side*.25*scale,y+2.95*scale,z-.35*scale),(x+side*.58*scale,y+3.45*scale,z-.25*scale),.10*scale,stone,r2=.02*scale,verts=8)
+  curve('Snow dragon tail',[(x,y+.9*scale,z+.45*scale),(x,y+.45*scale,z+1.5*scale),(x,y+.3*scale,z+2.2*scale)],.16*scale,stone)
+  c['ell']('Snow dragon crown',(x,y+3.15*scale,z-.35*scale),(.62*scale,.14*scale,.44*scale),snow,seg=12)
  def windmill(x,z,scale=1.0):
   y=height(x,z)
   box('Abandoned mill tower',(x,y+1.8*scale,z),(2.4*scale,3.6*scale,2.5*scale),wood,bevel=.10)
@@ -234,14 +256,14 @@ def build_landscape(c,mapid):
  if ice:
   # The old camp was isolated on the left. Move the active-looking settlement
   # up beside the allied fortress and give it a broken mill and a frozen mine.
-  camp(38,-24)
-  windmill(49,-24,.95)
-  frozen_mine(62,-40,1.05)
+  camp(48,-34)
+  windmill(58,-35,1.90)
+  frozen_mine(68,-49,2.10)
   # The western shoulder keeps the history of the old pass: snow-buried ruins
   # and two gargoyles watching the enemy gate.
-  for rx,rz,rs in [(-39,-28,1.25),(-23,-38,.9),(-40,18,1.05)]:ruin(rx,rz,rs)
-  for gx,gz in [(-43,-10),(-43,10)]:gargoyle(gx,gz,.95)
-  logging_site(24,7,1.0)
+  for rx,rz,rs in [(-39,-28,2.4),(-23,-38,1.8),(-40,18,2.0)]:ruin(rx,rz,rs)
+  for gx,gz in [(-60,-12),(-60,12)]:gargoyle(gx,gz,1.6)
+  logging_site(27,27,1.2)
   for x,z,sc in [(31,6,.75),(36,10,1.05),(41,7,.9),(45,13,.65),(32,14,.65)]:house(x,z,sc)
   # Stone crossing extends into both banks; paving disappears below the abutments.
   for x in [-5.8,5.8]:
@@ -259,14 +281,6 @@ def build_landscape(c,mapid):
    box('Bridge parapet',(0,.6,15+side*1.94),(12.8,.8,.35),stone,bevel=.1)
   # Timber fences, stone walls and supplies tie the settlement to the military road.
   for x,z,sc in [(29,20,.65),(36,21,.85),(43,23,.7),(46,3,.6),(29,9,.55)]:house(x,z,sc)
-  for x,z in [(27,5),(30,17),(-30,4),(-34,3)]:
-   y=height(x,z)
-   for k in range(3):box('Camp supply crate',(x+k*.65,y+.3,z),(.6,.6,.6),wood,bevel=.05)
-  for side in [-1,1]:
-   for z in range(3,20,2):
-    x=side*28;y=height(x,z)
-    tube('Settlement fence post',(x,y,z),(x,y+1,z),.08,wood)
-    tube('Settlement fence rail',(x,y+.65,z),(x,height(x,z+2)+.65,z+2),.065,wood)
   # A lookout island with a short footbridge to the east shore.
   for x in range(2,11):box('Lookout footbridge',(x,-.05,-20),(.94,.18,1.6),wood,bevel=.04)
   # Dock and moored fishing boat on the sheltered shore.
@@ -320,8 +334,8 @@ def build_landscape(c,mapid):
  # Clustered, varied vegetation/stone props, instanced by the runtime. Keep
  # landmark clearings reserved so foliage and rocks never grow through them.
  reserved=[
-  (38,-24,8), (49,-24,6), (62,-40,8), (24,7,8),
-  (-39,-28,6), (-23,-38,5), (-40,18,6), (-43,-10,5), (-43,10,5),
+  (48,-34,9), (58,-35,9), (68,-49,10), (27,27,10),
+  (-39,-28,9), (-23,-38,7), (-40,18,8), (-60,-12,8), (-60,12,8),
   (31,6,5), (36,10,6), (41,7,5), (45,13,5), (32,14,5),
   (-6,15,8), (0,-20,4), (-5,-4,5), (route[0][0],route[0][2],14),
   (route[-1][0],route[-1][2],14)

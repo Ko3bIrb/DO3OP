@@ -507,9 +507,9 @@ def build_landscape(c,mapid):
     if not all(math.hypot(x-px,z-pz)>=clearance+pr for px,pz,pr in occupied[len(reserved):]):continue
     return x,z
    return None
-  mine_at=free_special((49.5,-81.0),5.0,4.0,3.8)
+  mine_at=free_special((48.0,-70.0),3.0,4.0,3.8)
   if mine_at:
-   frozen_mine(mine_at[0],mine_at[1],1.55,-2.5);occupied.append((mine_at[0],mine_at[1],4.0));meta.setdefault('special_landmarks',[]).append({'kind':'mine','position':[mine_at[0],height(mine_at[0],mine_at[1])-2.5,mine_at[1]]})
+   frozen_mine(mine_at[0],mine_at[1],1.55,-14.0);occupied.append((mine_at[0],mine_at[1],4.0));meta.setdefault('special_landmarks',[]).append({'kind':'mine','position':[mine_at[0],height(mine_at[0],mine_at[1])-14.0,mine_at[1]]})
   for center,site_scale,clearance in [((23,20.5),.90,3.4),((29.5,30.5),1.15,4.6)]:
    log_at=free_special(center,4.2,clearance,3.8)
    if log_at:

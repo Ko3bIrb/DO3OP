@@ -1,7 +1,7 @@
 extends RefCounted
 
 const PATH = "user://progress.json"
-var data: Dictionary = {"best_waves": {}, "stars": {}, "total_kills": 0, "total_waves": 0, "audio_enabled": true, "difficulty": {"hell": "easy", "ice": "easy"}, "selected_map": "hell"}
+var data: Dictionary = {"best_waves": {}, "stars": {}, "total_kills": 0, "total_waves": 0, "audio_enabled": true, "difficulty": {"ice": "easy"}, "selected_map": "ice"}
 
 func _init() -> void:
 	var source = PATH

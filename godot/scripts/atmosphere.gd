@@ -25,7 +25,7 @@ func _light(parent: Node3D, at: Vector3, color: Color, energy: float, radius: fl
 
 func configure(scene: Node3D, id: String) -> void:
  _menu = id == "menu"
- var winter = id != "hell"
+ var winter = true
  var environment = WorldEnvironment.new()
  var settings = Environment.new()
  settings.background_mode = Environment.BG_SKY
@@ -45,21 +45,16 @@ func configure(scene: Node3D, id: String) -> void:
  settings.reflected_light_source = 1
  settings.tonemap_mode = Environment.TONE_MAPPER_AGX
  settings.tonemap_exposure = 0.95
- settings.ssao_enabled = true
- settings.ssao_radius = 2.5
- settings.ssao_intensity = 1.5
- settings.ssil_enabled = true
- settings.ssil_intensity = 0.6
- settings.glow_enabled = true
- settings.glow_intensity = 0.65
- settings.glow_bloom = 0.03
- settings.glow_hdr_threshold = 1.5
+ # Avoid full-screen post-processing passes that saturate the GPU on the
+ # winter scene while preserving the same lighting and fog palette.
+ settings.ssao_enabled = false
+ settings.ssil_enabled = false
+ settings.glow_enabled = false
  settings.fog_enabled = true
  settings.fog_light_color = Color("465c7b") if winter else Color("63301c")
  settings.fog_density = 0.0009 if not _menu else 0.007
  settings.fog_sun_scatter = 0.12
- settings.volumetric_fog_enabled = true
- settings.volumetric_fog_density = 0.006 if _menu else 0.0008
+ settings.volumetric_fog_enabled = false
  settings.volumetric_fog_albedo = Color("b6c4d2") if winter else Color("9c4a27")
  settings.volumetric_fog_sky_affect = 0.3
  environment.environment = settings
@@ -71,8 +66,8 @@ func configure(scene: Node3D, id: String) -> void:
  moon.rotation_degrees = Vector3(-38, -32, 0)
  moon.shadow_enabled = true
  moon.light_angular_distance = 2.0
- moon.directional_shadow_max_distance = 300.0
- moon.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
+ moon.directional_shadow_max_distance = 180.0
+ moon.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_2_SPLITS
  scene.add_child(moon)
  var rim = DirectionalLight3D.new()
  rim.rotation_degrees = Vector3(-23, 145, 0)
@@ -116,7 +111,7 @@ func configure(scene: Node3D, id: String) -> void:
 func _snow(scene: Node3D, winter: bool) -> void:
  var particles = GPUParticles3D.new()
  particles.name = "Drifting snow" if winter else "Floating ash"
- particles.amount = 900 if _menu else 1300 if winter else 350
+ particles.amount = 500 if _menu else 420 if winter else 180
  particles.lifetime = 18
  particles.preprocess = 5
  particles.visibility_aabb = AABB(Vector3(-120,-20,-100), Vector3(240,100,200))

@@ -145,9 +145,8 @@ def build_landscape(c,mapid):
   if i%42==0:
    at=p+normal*2.6;c['lantern'](at,ice)
    meta.setdefault('lanterns',[]).append([at.x,at.y+2.25,at.z])
- for s in spots:
-  x,y,z=s['position'];tube('Rock tower terrace',(x,-.4,z),(x,.14,z),1.40,stone,r2=1.16,verts=24)
-  ring('Terrace inlay',(x,.16,z),1.02,.033,c['ICE'] if s['restricted_to'] else gold)
+ # Construction spots stay in the simulation only. No visible discs or terraces
+ # are placed along the road, so the route reads as one continuous surface.
  def camp(x,z):
   y=height(x,z)
   for dx,dz,sc in [(-3,-1,1.1),(2,2,.8)]:
@@ -266,10 +265,10 @@ def build_landscape(c,mapid):
     count-=1
  # Continuous forest across the valley shoulders; small clearings remain around play.
  if ice:
-  for _ in range(3000):
+  for _ in range(1500):
    x=random.uniform(-87,87);z=random.uniform(-69,43)
    if not allowed(x,z,4.6):continue
-   density=.52+.30*math.sin(x*.15+math.sin(z*.2))
+   density=.38+.22*math.sin(x*.15+math.sin(z*.2))
    if random.random()>density:continue
    if height(x,z)>23:continue
    sc=random.uniform(.5,1.25)

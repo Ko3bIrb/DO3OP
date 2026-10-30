@@ -7,7 +7,7 @@ const Sound = preload("res://scripts/sound.gd")
 const CombatFX = preload("res://scripts/combat_fx.gd")
 const Landscape = preload("res://scripts/landscape.gd")
 const Atmosphere = preload("res://scripts/atmosphere.gd")
-const MAP_IMAGES = {"hell":preload("res://assets/map_hell.png"),"ice":preload("res://assets/map_ice.png")}
+const MAP_IMAGES = {"ice":preload("res://assets/map_ice.png")}
 const TYPES = ["gun", "sniper", "mortar", "slow", "skyguard", "amp"]
 
 var save_store = SaveStore.new()
@@ -34,6 +34,7 @@ var sell_button: Button
 var audio_button: Button
 var speed_slider: HSlider
 var speed_value: Label
+var fps_label: Label
 var tactical_button: Button
 var _hud_visibility: Dictionary = {}
 var _spatial_overlay_visibility: Dictionary = {}
@@ -96,6 +97,13 @@ func _ready() -> void:
 	dialog_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	ui.add_child(dialog_layer)
 	get_viewport().size_changed.connect(_layout)
+	# The hell map was removed; migrate older saves to the remaining winter map.
+	save_store.data.selected_map = "ice"
+	save_store.data.difficulty.erase("hell")
+	save_store.data.best_waves.erase("hell")
+	save_store.data.stars.erase("hell")
+	if not save_store.data.difficulty.has("ice"):
+		save_store.data.difficulty["ice"] = "easy"
 	for arg in OS.get_cmdline_user_args():
 		if arg == "--windowed":
 			get_window().mode = Window.MODE_WINDOWED
@@ -103,7 +111,7 @@ func _ready() -> void:
 	show_menu()
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--map="):
-			start_game(arg.trim_prefix("--map="), "easy")
+			start_game("ice", "easy")
 		elif arg.begins_with("--screenshot="):
 			_screenshot_path = arg.trim_prefix("--screenshot=")
 			_screenshot_timer = 3.0
@@ -113,7 +121,7 @@ func _ready() -> void:
 func _demo() -> void:
 	while _loading: await get_tree().process_frame
 	if sim == null:
-		await start_game("hell", "easy")
+		await start_game("ice", "easy")
 	sim.coins = 3000
 	for i in range(min(8, sim.spots.size())):
 		sim.build("sniper" if sim.spots[i].restricted_to != "" else TYPES[i % 6] if TYPES[i % 6] != "sniper" else "gun", i)
@@ -172,6 +180,7 @@ func _remove_game_ui() -> void:
 	shop_buttons.clear()
 	speed_slider = null
 	speed_value = null
+	fps_label = null
 	tower_panel = null
 
 func show_menu() -> void:
@@ -341,7 +350,7 @@ func _show_maps() -> void:
 	var cards = HBoxContainer.new()
 	cards.add_theme_constant_override("separation", 16)
 	rows.add_child(cards)
-	for id in ["hell", "ice"]:
+	for id in ["ice"]:
 		var button = _button("", func(): save_store.data.selected_map = id; save_store.save(); _choose_difficulty(id), cards, Vector2(410, 310))
 		button.tooltip_text = "Выбрать карту"
 		var content = VBoxContainer.new()
@@ -359,8 +368,8 @@ func _show_maps() -> void:
 		preview.custom_minimum_size = Vector2(386, 196)
 		preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		content.add_child(preview)
-		_label("ПЕПЕЛЬНЫЙ РАЗЛОМ" if id == "hell" else "ЗИМНЯЯ БУХТА", content, 19).mouse_filter = Control.MOUSE_FILTER_IGNORE
-		var description = _label("Лава, огненные уступы и дорога сквозь руины" if id == "hell" else "Водопад, береговые уступы и узкий мост", content, 12)
+		_label("ЗИМНЯЯ БУХТА", content, 19).mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var description = _label("Водопад, береговые уступы и узкий мост", content, 12)
 		description.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		var record = _label("20 волн · Рекорд: %d · %s" % [save_store.data.best_waves.get(id, 0), "★".repeat(int(save_store.data.stars.get(id, 0)))], content, 12)
 		record.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -395,6 +404,8 @@ func _show_rules() -> void:
 	_button("Понятно", _back_dialog, rows)
 
 func start_game(id: String, difficulty_id: String) -> void:
+	# Keep old command-line arguments and saves harmless after the hell map was removed.
+	id = "ice"
 	if _loading:
 		return
 	_loading = true
@@ -443,9 +454,9 @@ func start_game(id: String, difficulty_id: String) -> void:
 	sim.changed.connect(_refresh)
 	sim.wave_started.connect(func(): sound.wave_start())
 	sim.completed.connect(_completed)
-	accent = Color("c99d62") if id == "hell" else Color("99c3d2")
-	panel_color = Color("181410") if id == "hell" else Color("10212b")
-	muted = Color("b9aa95") if id == "hell" else Color("a6c0ca")
+	accent = Color("99c3d2")
+	panel_color = Color("10212b")
+	muted = Color("a6c0ca")
 	ui.theme = _theme()
 	world = Node3D.new()
 	add_child(world)
@@ -458,20 +469,9 @@ func start_game(id: String, difficulty_id: String) -> void:
 	_lighting(id)
 	camera = Camera3D.new()
 	camera.fov = 45.0
-	camera.far = 1600.0
+	camera.far = 320.0
 	add_child(camera)
 	camera.current = true
-	for i in range(sim.spots.size()):
-		var spot = sim.spots[i]
-		var mesh = _mesh(CylinderMesh.new(), Color("a4c5d5") if spot.restricted_to != "" else accent, true)
-		mesh.mesh.top_radius = 1.12
-		mesh.mesh.bottom_radius = 1.18
-		mesh.mesh.height = 0.10
-		mesh.mesh.radial_segments = 16
-		mesh.position = spot.position + Vector3.UP * 0.27
-		mesh.visible = false
-		world.add_child(mesh)
-		spot_nodes.append(mesh)
 	_build_hud()
 	_refresh()
 	_layout()
@@ -644,6 +644,11 @@ func _build_hud() -> void:
 			speed_slider.value = 1.0)
 	tempo.add_child(speed_slider)
 	audio_button = null
+	fps_label = _label("FPS: --", ui, 12)
+	fps_label.custom_minimum_size = Vector2(90, 22)
+	fps_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	fps_label.modulate = muted
+	fps_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	wave_label = _label("", ui, 15)
 	dock = PanelContainer.new()
 	ui.add_child(dock)
@@ -767,6 +772,8 @@ func _layout() -> void:
 		return
 	navigation.position = Vector2(18, 14)
 	speed_bar.position = Vector2(view.x - speed_bar.get_combined_minimum_size().x - 18, 32)
+	if is_instance_valid(fps_label):
+		fps_label.position = Vector2(view.x - fps_label.custom_minimum_size.x - 18, 10)
 	wave_label.position = Vector2((view.x - 150) * 0.5, 44)
 	dock.position = Vector2((view.x - dock.get_combined_minimum_size().x) * 0.5, view.y - dock.get_combined_minimum_size().y - 14)
 	_fit_camera()
@@ -840,11 +847,6 @@ func enter_build(type: String) -> void:
 	world.add_child(ghost)
 	_ghost_style(ghost)
 	ghost.hide()
-	for i in range(spot_nodes.size()):
-		var spot = sim.spots[i]
-		var valid = _spot_allows(i, type)
-		spot_nodes[i].visible = valid
-		spot_nodes[i].material_override.albedo_color = Color("44ff66")
 	_refresh()
 
 func cancel_build() -> void:
@@ -852,9 +854,6 @@ func cancel_build() -> void:
 	if is_instance_valid(ghost):
 		ghost.queue_free()
 	ghost = null
-	for i in range(spot_nodes.size()):
-		spot_nodes[i].hide()
-		spot_nodes[i].material_override.albedo_color = Color("a4c5d5") if sim.spots[i].restricted_to != "" else accent
 	_update_range()
 	_refresh()
 
@@ -889,7 +888,6 @@ func _tower_changed(tower: Dictionary, action: String) -> void:
 		world.add_child(node)
 		node.set_meta("turret", node.find_child("turret", true, false))
 		tower_nodes[tower.id] = node
-	spot_nodes[tower.spot].visible = building != "" and _spot_allows(tower.spot, building)
 
 func _enemy_spawned(enemy: Dictionary) -> void:
 	var entry: Dictionary
@@ -1125,6 +1123,8 @@ func _physics_process(delta: float) -> void:
 		sim.tick(min(delta, 0.1))
 
 func _process(delta: float) -> void:
+	if is_instance_valid(fps_label):
+		fps_label.text = "FPS: %d" % Engine.get_frames_per_second()
 	if sim != null and camera != null and not _loading:
 		var game_delta = max(0.0, sim.game_time - _last_time)
 		_last_time = sim.game_time

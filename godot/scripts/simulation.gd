@@ -9,7 +9,7 @@ signal effect(event: Dictionary)
 signal wave_started
 signal completed(won: bool)
 
-var map_id = "hell"
+var map_id = "ice"
 var map: Dictionary
 var difficulty: Dictionary
 var hp = 20
@@ -142,7 +142,7 @@ func remove_enemy(enemy: Dictionary, rewarded: bool) -> void:
 	if data.has("lavaOnDeath"):
 		effect.emit({"kind": "lava", "position": enemy.position, "radius": data.lavaOnDeath.radius, "duration": data.lavaOnDeath.duration})
 	if data.has("explosionOnDeath"):
-		effect.emit({"kind": "explosion", "position": enemy.position, "color": Color("ff3bff") if map_id == "hell" else Color("88ccff"), "radius": 1.5})
+		effect.emit({"kind": "explosion", "position": enemy.position, "color": Color("88ccff"), "radius": 1.5})
 	enemies.erase(enemy)
 	enemy_removed.emit(enemy, rewarded)
 	changed.emit()
@@ -217,7 +217,7 @@ func _update_enemies(delta: float) -> void:
 			var near = _nearest_tower(enemy.position, data.stepDamage.radius)
 			if not near.is_empty():
 				near.cooldown = max(near.cooldown, game_time + data.stepDamage.towerStun)
-				effect.emit({"kind": "explosion", "position": enemy.position, "color": Color("ff3b3b") if map_id == "hell" else Color("88ccff"), "radius": 1.5})
+				effect.emit({"kind": "explosion", "position": enemy.position, "color": Color("88ccff"), "radius": 1.5})
 			enemy.step_at = game_time + data.stepDamage.cooldown
 		if data.has("buffSpeed") and game_time >= enemy.buff_at:
 			for other in enemies:
@@ -238,7 +238,7 @@ func _update_enemies(delta: float) -> void:
 			if not near.is_empty() and game_time >= enemy.siege_at:
 				near.cooldown = max(near.cooldown, game_time + data.siege.towerStun)
 				enemy.siege_at = game_time + 1.0 / data.siege.fireRate
-				effect.emit({"kind": "beam", "start": enemy.position + Vector3.UP * enemy.base_y, "end": near.position + Vector3.UP * 1.6, "color": Color("ff3b3b") if map_id == "hell" else Color("88ccff")})
+				effect.emit({"kind": "beam", "start": enemy.position + Vector3.UP * enemy.base_y, "end": near.position + Vector3.UP * 1.6, "color": Color("88ccff")})
 		if velocity > 0:
 			var length = waypoints[enemy.path_index].distance_to(waypoints[enemy.path_index + 1])
 			enemy.progress += velocity * delta / length

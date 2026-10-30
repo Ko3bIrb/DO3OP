@@ -31,38 +31,40 @@ func configure(scene: Node3D, id: String) -> void:
  settings.background_mode = Environment.BG_SKY
  var sky = Sky.new()
  var sky_material = ProceduralSkyMaterial.new()
- sky_material.sky_top_color = Color("101e37") if winter else Color("180d14")
- sky_material.sky_horizon_color = Color("3e4d68") if winter else Color("5b261d")
- sky_material.ground_bottom_color = Color("101925")
- sky_material.ground_horizon_color = sky_material.sky_horizon_color
- sky_material.sky_curve = 0.20
+ # Deep blue hour: the winter map should read as late twilight or the first
+ # minutes before sunrise, with a cool horizon and almost navy zenith.
+ sky_material.sky_top_color = Color("071329") if winter else Color("180d14")
+ sky_material.sky_horizon_color = Color("203b63") if winter else Color("5b261d")
+ sky_material.ground_bottom_color = Color("050b1c")
+ sky_material.ground_horizon_color = Color("142844") if winter else sky_material.sky_horizon_color
+ sky_material.sky_curve = 0.38
  sky_material.sun_angle_max = 2.0
  sky.sky_material = sky_material
  settings.sky = sky
  settings.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
- settings.ambient_light_color = Color("8197b9") if winter else Color("bd5731")
- settings.ambient_light_energy = 0.30 if winter else 0.24
+ settings.ambient_light_color = Color("526b98") if winter else Color("bd5731")
+ settings.ambient_light_energy = 0.24 if winter else 0.24
  settings.reflected_light_source = 1
  settings.tonemap_mode = Environment.TONE_MAPPER_AGX
- settings.tonemap_exposure = 0.95
+ settings.tonemap_exposure = 0.84 if winter else 0.95
  # Avoid full-screen post-processing passes that saturate the GPU on the
  # winter scene while preserving the same lighting and fog palette.
  settings.ssao_enabled = false
  settings.ssil_enabled = false
  settings.glow_enabled = false
  settings.fog_enabled = true
- settings.fog_light_color = Color("465c7b") if winter else Color("63301c")
- settings.fog_density = 0.0009 if not _menu else 0.007
- settings.fog_sun_scatter = 0.12
+ settings.fog_light_color = Color("294777") if winter else Color("63301c")
+ settings.fog_density = 0.00115 if not _menu else 0.007
+ settings.fog_sun_scatter = 0.07
  settings.volumetric_fog_enabled = false
- settings.volumetric_fog_albedo = Color("b6c4d2") if winter else Color("9c4a27")
+ settings.volumetric_fog_albedo = Color("7894c2") if winter else Color("9c4a27")
  settings.volumetric_fog_sky_affect = 0.3
  environment.environment = settings
  scene.add_child(environment)
  var moon = DirectionalLight3D.new()
  moon.name = "Moonlight"
- moon.light_color = Color("bfd6f3") if winter else Color("e78c54")
- moon.light_energy = 0.46 if winter else 0.34
+ moon.light_color = Color("91b8ed") if winter else Color("e78c54")
+ moon.light_energy = 0.36 if winter else 0.34
  moon.rotation_degrees = Vector3(-38, -32, 0)
  moon.shadow_enabled = true
  moon.light_angular_distance = 2.0
@@ -71,8 +73,8 @@ func configure(scene: Node3D, id: String) -> void:
  scene.add_child(moon)
  var rim = DirectionalLight3D.new()
  rim.rotation_degrees = Vector3(-23, 145, 0)
- rim.light_color = Color("d4ad92") if winter else Color("ee4822")
- rim.light_energy = 0.14
+ rim.light_color = Color("5d78a9") if winter else Color("ee4822")
+ rim.light_energy = 0.08
  scene.add_child(rim)
  if _menu:
   _light(scene, Vector3(3.4, 1.0, 1.8), Color("ffb367"), 5.0, 9, true)
@@ -86,14 +88,14 @@ func configure(scene: Node3D, id: String) -> void:
   var scenery = JSON.parse_string(FileAccess.get_file_as_string("res://data/landscapes.json"))[id]
   for i in range(scenery.get("lanterns",[]).size()):
    var p = scenery.lanterns[i]
-   _light(scene,Vector3(p[0],p[1],p[2]),Color("ffca8b"),3.2,10,i%4==0)
+   _light(scene,Vector3(p[0],p[1],p[2]),Color("ffc078"),2.5,10,i%4==0)
   for p in scenery.get("homes",[]):
-   _light(scene,Vector3(p[0],p[1],p[2]),Color("ffd39a"),1.8,7)
+   _light(scene,Vector3(p[0],p[1],p[2]),Color("ffc27e"),1.35,7)
   for i in range(mini(14,scenery.fires.size())):
    var p=scenery.fires[i]
-   _light(scene,Vector3(p[0],p[1]+1,p[2]),Color("ff9b4c"),4.5,12,i<4)
+   _light(scene,Vector3(p[0],p[1]+1,p[2]),Color("ff874d"),3.5,12,i<4)
   if winter:
-   _light(scene,Vector3(0,2,-25),Color("6eabbc"),2.5,23)
+   _light(scene,Vector3(0,2,-25),Color("4e86ba"),2.0,23)
    settings.ssr_enabled = true
   else:
    for at in [Vector3(-3,1,3),Vector3(-4,1,-21),Vector3(-10,25,-52)]:
@@ -102,7 +104,7 @@ func configure(scene: Node3D, id: String) -> void:
   for offset in [Vector3(-4,3,-3), Vector3(-4,3,3), Vector3(1,6,0)]:
    _light(scene, castle + offset, Color("ffd3a0"), 4.0, 13, true)
   var portal = Vector3(route[0][0], 3.5, route[0][2])
-  _light(scene, portal, Color("82c6dd") if winter else Color("e8885b"), 5, 16)
+  _light(scene, portal, Color("6faee3") if winter else Color("e8885b"), 4, 16)
   if not winter:
    for at in [Vector3(-26, 1, 25), Vector3(25,1,-29), Vector3(0,1,-16)]:
     _light(scene, at, Color("f09a68"), 3.2, 16)

@@ -246,8 +246,16 @@ def build_landscape(c,mapid):
    c['crystal']((xx,height(xx,zz),zz),random.uniform(.8,2.0),c['ICE'])
  meta['enemy_castle']=[x-7,0,z]
 
- # Clustered, varied vegetation/stone props, instanced by the runtime.
- reserved=[(-32,1,6),(36,10,11)] if ice else [(36,10,10),(-5,3,7)]
+ # Clustered, varied vegetation/stone props, instanced by the runtime. Keep
+ # landmark clearings reserved so foliage and rocks never grow through them.
+ reserved=[
+  (-32,1,7), (31,6,5), (36,10,6), (41,7,5), (45,13,5), (32,14,5),
+  (-6,15,8), (0,-20,4), (-5,-4,5), (route[0][0],route[0][2],14),
+  (route[-1][0],route[-1][2],14)
+ ] if ice else [(36,10,10),(-5,3,7),(route[0][0],route[0][2],14),(route[-1][0],route[-1][2],14)]
+ occupied=[(x,z,r) for x,z,r in reserved]
+ def clear_of_props(x,z,radius):
+  return all(math.hypot(x-px,z-pz) >= radius+pr for px,pz,pr in occupied)
  def allowed(x,z,margin=4):
   if c['near_route'](x,z,route)<margin:return False
   if min(math.hypot(x-s['position'][0],z-s['position'][2]) for s in spots)<3.1:return False
@@ -260,26 +268,34 @@ def build_landscape(c,mapid):
    for _ in range(count*4):
     if count<=0:break
     a=random.uniform(0,math.tau);r=radius*math.sqrt(random.random());x=cx+math.cos(a)*r;z=cz+math.sin(a)*r
-    if not allowed(x,z):continue
-    sc=random.uniform(.55,1.35);meta['instances'].append({'key':'prop_fir_'+str(random.randrange(3)),'position':[x,height(x,z),z],'scale':[sc*random.uniform(.85,1.05),sc*random.uniform(.9,1.35),sc*random.uniform(.85,1.1)],'yaw':random.uniform(0,math.tau)})
+    sc=random.uniform(.55,1.35);clearance=max(1.45,sc*1.65)
+    if not allowed(x,z) or not clear_of_props(x,z,clearance):continue
+    meta['instances'].append({'key':'prop_fir_'+str(random.randrange(3)),'position':[x,height(x,z),z],'scale':[sc*random.uniform(.85,1.05),sc*random.uniform(.9,1.35),sc*random.uniform(.85,1.1)],'yaw':random.uniform(0,math.tau)})
+    occupied.append((x,z,clearance))
     count-=1
  # Continuous forest across the valley shoulders; small clearings remain around play.
  if ice:
-  for _ in range(1500):
+  tree_count=sum(1 for item in meta['instances'] if item['key'].startswith('prop_fir_'))
+  for _ in range(10000):
+   if tree_count>=900:break
    x=random.uniform(-87,87);z=random.uniform(-69,43)
    if not allowed(x,z,4.6):continue
    density=.38+.22*math.sin(x*.15+math.sin(z*.2))
    if random.random()>density:continue
    if height(x,z)>23:continue
-   sc=random.uniform(.5,1.25)
+   sc=random.uniform(.5,1.25);clearance=max(1.35,sc*1.55)
+   if not clear_of_props(x,z,clearance):continue
    meta['instances'].append({'key':'prop_fir_'+str(random.randrange(3)),'position':[x,height(x,z)-.1,z],'scale':[sc,sc*random.uniform(.85,1.3),sc],'yaw':random.uniform(0,math.tau)})
+   occupied.append((x,z,clearance));tree_count+=1
  # Shoulder cliff groups, rather than loose isolated boulders on empty plains.
  for side in [-1,1]:
   for j in range(30):
    z=-40+j*2.4;x=side*(15.5+2.2*math.sin(z*.19))
    if not allowed(x,z,5.2):continue
    sc=random.uniform(1.2,3.8)
+   if not clear_of_props(x,z,max(1.0,sc*.75)):continue
    meta['instances'].append({'key':('prop_snowrock_' if ice else 'prop_basalt_')+str(j%3),'position':[x,height(x,z)-sc*.25,z],'scale':[sc,sc*random.uniform(1,2),sc*.8],'yaw':random.uniform(0,math.tau)})
+   occupied.append((x,z,max(1.0,sc*.75)))
  if not ice:
   # Jagged basalt stacks and ruined towers emerge from the lava sea.
   for _ in range(210):
@@ -292,11 +308,13 @@ def build_landscape(c,mapid):
   for x,z in [(-44,-30),(-27,26),(20,27),(41,-31)]:
    y=max(-1,height(x,z));tube('Ruined sentinel tower',(x,y-1,z),(x,y+5,z),1.5,basalt,verts=12)
    for j in range(5):box('Ruined crenel',(x+math.cos(j*math.tau/5)*1.3,y+5,z+math.sin(j*math.tau/5)*1.3),(.5,1,.5),basalt)
- for _ in range(650):
+ for _ in range(2600):
   x=random.uniform(-69,69);z=random.uniform(-53,35)
   if not allowed(x,z,5.5):continue
-  sc=random.uniform(.55,2.2)
+  sc=random.uniform(.55,2.2);clearance=max(1.0,sc*.80)
+  if not clear_of_props(x,z,clearance):continue
   meta['instances'].append({'key':('prop_snowrock_' if ice else 'prop_basalt_')+str(random.randrange(3)),'position':[x,height(x,z)-.15,z],'scale':[sc*random.uniform(.7,1.7),sc*random.uniform(.7,1.7),sc*random.uniform(.8,1.4)],'yaw':random.uniform(0,math.tau)})
+  occupied.append((x,z,clearance))
   if not ice and sc>1.7:
    tube('Charred crooked tree',(x,height(x,z),z),(x+.3,height(x,z)+3.2,z-.2),.13,wood,r2=.025)
    tube('Broken limb',(x+.2,height(x,z)+1.8,z),(x+1.1,height(x,z)+2.4,z+.4),.06,wood,r2=.01)

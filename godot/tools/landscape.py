@@ -134,19 +134,19 @@ def build_landscape(c,mapid):
   for j in range(4):
    k=i*5+j;ff.append((k,k+5,k+6,k+1))
  mesh('Worn connected causeway',vv,ff,roadmat,smooth=True)
- for i in range(0,len(samples),6):
+ # Lanterns mark key bends; loose paving blocks along every segment created
+ # the chain of dark route points visible from the game camera.
+ for i in range(0,len(samples),42):
   p=samples[i]
   if ice and abs(p.x)<6 and p.z>12:continue
   tangent=(samples[min(i+1,len(samples)-1)]-samples[max(0,i-1)]).normalized();normal=Vector((-tangent.z,0,tangent.x))
-  for side in [-1,1]:
-   at=p+normal*side*1.78
-   if random.random()<.22:continue
-   size=random.uniform(.23,.40);box('Chipped paving edge',(at.x,.1,at.z),(size,.20,random.uniform(.3,.60)),stone if ice else basalt,bevel=.075)
-  if i%42==0:
-   at=p+normal*2.6;c['lantern'](at,ice)
-   meta.setdefault('lanterns',[]).append([at.x,at.y+2.25,at.z])
- # Construction spots stay in the simulation only. No visible discs or terraces
- # are placed along the road, so the route reads as one continuous surface.
+  at=p+normal*2.6;c['lantern'](at,ice)
+  meta.setdefault('lanterns',[]).append([at.x,at.y+2.25,at.z])
+ # Construction platforms are separate from the route markers and remain
+ # visible so players can tell where a tower may be placed.
+ for s in spots:
+  x,y,z=s['position'];tube('Rock tower terrace',(x,-.4,z),(x,.14,z),1.40,stone,r2=1.16,verts=24)
+  ring('Terrace inlay',(x,.16,z),1.02,.033,c['ICE'] if s['restricted_to'] else gold)
  def camp(x,z):
   y=height(x,z)
   for dx,dz,sc in [(-3,-1,1.1),(2,2,.8)]:

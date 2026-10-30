@@ -472,6 +472,17 @@ func start_game(id: String, difficulty_id: String) -> void:
 	camera.far = 320.0
 	add_child(camera)
 	camera.current = true
+	for i in range(sim.spots.size()):
+		var spot = sim.spots[i]
+		var mesh = _mesh(CylinderMesh.new(), Color("a4c5d5") if spot.restricted_to != "" else accent, true)
+		mesh.mesh.top_radius = 1.12
+		mesh.mesh.bottom_radius = 1.18
+		mesh.mesh.height = 0.10
+		mesh.mesh.radial_segments = 16
+		mesh.position = spot.position + Vector3.UP * 0.27
+		mesh.visible = false
+		world.add_child(mesh)
+		spot_nodes.append(mesh)
 	_build_hud()
 	_refresh()
 	_layout()
@@ -847,6 +858,10 @@ func enter_build(type: String) -> void:
 	world.add_child(ghost)
 	_ghost_style(ghost)
 	ghost.hide()
+	for i in range(spot_nodes.size()):
+		var valid = _spot_allows(i, type)
+		spot_nodes[i].visible = valid
+		spot_nodes[i].material_override.albedo_color = Color("44ff66") if valid else Color("a4c5d5")
 	_refresh()
 
 func cancel_build() -> void:
@@ -854,6 +869,9 @@ func cancel_build() -> void:
 	if is_instance_valid(ghost):
 		ghost.queue_free()
 	ghost = null
+	for i in range(spot_nodes.size()):
+		spot_nodes[i].hide()
+		spot_nodes[i].material_override.albedo_color = Color("a4c5d5") if sim.spots[i].restricted_to != "" else accent
 	_update_range()
 	_refresh()
 
@@ -888,6 +906,7 @@ func _tower_changed(tower: Dictionary, action: String) -> void:
 		world.add_child(node)
 		node.set_meta("turret", node.find_child("turret", true, false))
 		tower_nodes[tower.id] = node
+	spot_nodes[tower.spot].visible = building != "" and _spot_allows(tower.spot, building)
 
 func _enemy_spawned(enemy: Dictionary) -> void:
 	var entry: Dictionary

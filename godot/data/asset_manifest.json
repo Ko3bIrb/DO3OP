@@ -25,9 +25,9 @@
     "prop_basalt_0.glb": "55ed40213eda522ba88d32df11a2a886f6c8624ff8d257a691ceeaa383b8e52e",
     "prop_basalt_1.glb": "599333ba1ad7f4cde181ac86f05815b30fb973837a9ee23831dcd74da56ab36e",
     "prop_basalt_2.glb": "14258d978fba1314a9d24f010901d2d9129b709a9e18f86cda21ea5a578cef06",
-    "prop_fir_0.glb": "8ba784932530d930961ac7e42db91ce3c6aaba99895d0a93c180ce1d7391e214",
-    "prop_fir_1.glb": "a56f7b65b01d78b2f4b1bfdeffeb026a906897fdb072295cf218f08a36040a6b",
-    "prop_fir_2.glb": "3b966e21e6bbdd2ebb04317a29f3b85e3bcfb78ddd7d6c19513e33245faa7205",
+    "prop_fir_0.glb": "b4b1b8f3c59c8200c967bb5792a7de78ff727f1acef3496d6a543c55efcb9ec5",
+    "prop_fir_1.glb": "87d03ee86e6f46d1b88c102bc1dbb3853de458b1b035b55b766f7a1353ab5370",
+    "prop_fir_2.glb": "20dd683b2b8b01f211ca776e2bdb3f1d03b0f47fb91dd69c4582e03052a0734a",
     "prop_snowrock_0.glb": "fce278c48609d9033085a7c482ce680d55bf0d6c2eb849f02a11dc2e0e46ef06",
     "prop_snowrock_1.glb": "c26446f2909b9549d09d467e4a620e6dbd64a53aba41ca241c23fceccd6ede1d",
     "prop_snowrock_2.glb": "78efd88f7bf951150159e167852d19425f55975613ff60c71ce5e00a8167dfab",
@@ -49,6 +49,6 @@
     "tower_sniper_1.glb": "9f6f6e37f325d4f25b97f3b4d6073d20f11f96ef4f8347556d5758845eb8d0b8",
     "tower_sniper_2.glb": "1a6221f79564f742ac4d413f5176e20e1aca726e421e91d36ab36035716a34b8",
     "tower_sniper_3.glb": "8da75f8cc44f7b684f03e2be6cac871efe277bae33a16dfde29eeb37b6242529",
-    "world_ice.glb": "363f7575971f804272f9423c827a9289e84f80ec277e0e2f1c68d1a786a93ef1"
+    "world_ice.glb": "e2997c3ad9f0f7ba9b584ea39d59b3f2e5466c8a948a0180ae605fd945c4c60a"
   }
 }

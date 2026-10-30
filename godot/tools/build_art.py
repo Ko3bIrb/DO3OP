@@ -546,30 +546,31 @@ def fir(p,height=6,snow=True):
      mesh('Fir needles',verts,faces,PINE,smooth=True)
      if snow and segment%2==0:
       curve('Snow on bough',[at+Vector((0,height*.012,0)),at.lerp(end,.55)+Vector((0,height*.016,0)),end],height*.015,SNOW)
- # Finish the crown with another small ring of boughs. The old asset ended in
- # a long bare spike; this keeps the same layered branch language through the
- # top and closes it with a rounded foliage crown.
- top_origin=Vector((x,y+height*.83,z));top_radius=height*.075
- for branch in range(5):
-  angle=branch*math.tau/5+.24
-  forward=Vector((math.cos(angle),0,math.sin(angle)))
-  across=Vector((-forward.z,0,forward.x))
-  tip=top_origin+forward*top_radius+Vector((0,-height*.02,0))
-  tube('Natural fir crown bough',top_origin,tip,height*.009,PINE,r2=.003,verts=6)
-  for segment in range(1,4):
-   t=segment/4;at=top_origin.lerp(tip,t);w=top_radius*.20*(1-t*.65)
-   for side in [-1,1]:
-    end=at+forward*top_radius*.27+across*w*side+Vector((0,-height*.012,0))
-    verts=[at];faces=[]
-    for j in range(6):
-     u=j/5;point=at.lerp(end,u);width=height*.028*math.sin(math.pi*u)*(1+random.uniform(-.12,.12))
-     verts.extend([point+across*width,point-across*width])
-    for j in range(5):faces.append((1+j*2,1+(j+1)*2,2+(j+1)*2,2+j*2))
-    mesh('Fir crown needles',verts,faces,PINE,smooth=True)
-    if snow and segment==2:
-     curve('Snow on crown bough',[at+Vector((0,height*.01,0)),at.lerp(end,.55)+Vector((0,height*.012,0)),end],height*.012,SNOW)
- # A small rounded crown avoids the unnatural needle-like termination.
- ell('Rounded fir crown',(x,y+height*.94,z),(height*.055,height*.075,height*.055),PINE,seg=12)
+ # Continue the same branch tiers through the crown. The old rounded cap read
+ # as a dark ball; these smaller upward tiers keep the tree continuous from
+ # the trunk to its natural top point without a separate ornament.
+ for crown_layer in range(3):
+  yy=y+height*(.83+crown_layer*.055)
+  radius=height*(.075-crown_layer*.022)
+  for branch in range(5):
+   angle=branch*math.tau/5+crown_layer*.32+.24
+   forward=Vector((math.cos(angle),0,math.sin(angle)))
+   across=Vector((-forward.z,0,forward.x))
+   origin=Vector((x,yy,z))
+   tip=origin+forward*radius+Vector((0,height*(.005+crown_layer*.012),0))
+   tube('Natural fir crown bough',origin,tip,height*.009,PINE,r2=.003,verts=6)
+   for segment in range(1,4):
+    t=segment/4;at=origin.lerp(tip,t);w=radius*.20*(1-t*.65)
+    for side in [-1,1]:
+     end=at+forward*radius*.27+across*w*side+Vector((0,height*.006,0))
+     verts=[at];faces=[]
+     for j in range(6):
+      u=j/5;point=at.lerp(end,u);width=height*.028*math.sin(math.pi*u)*(1+random.uniform(-.12,.12))
+      verts.extend([point+across*width,point-across*width])
+     for j in range(5):faces.append((1+j*2,1+(j+1)*2,2+(j+1)*2,2+j*2))
+     mesh('Fir crown needles',verts,faces,PINE,smooth=True)
+     if snow and segment==2:
+      curve('Snow on crown bough',[at+Vector((0,height*.01,0)),at.lerp(end,.55)+Vector((0,height*.012,0)),end],height*.012,SNOW)
 
 def rock(p,size=2,ice=False):
  bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2,radius=1,location=V(p));o=bpy.context.object

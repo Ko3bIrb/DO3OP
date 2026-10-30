@@ -86,14 +86,14 @@ def build_landscape(c,mapid):
   # The source runs through the mountain and spills over a real rock lip.
   # Its upper end stays above the camera framing; only the formed cascade is
   # visible before it widens into the lake.
-  lip_z=-45.5;lip_y=13.95;source_y=28.0
-  for strand,(cx,width,top,bottom,phase) in enumerate([(-1.2,1.05,-60.0,-33.2,.0),(.9,.7,-59.1,-32.4,1.5),(2.0,.38,-58.0,-33.8,3.2)]):
+  lip_z=-45.5;lip_y=13.95;source_y=42.0
+  for strand,(cx,width,top,bottom,phase) in enumerate([(-2.0,2.4,-75.0,-33.2,.0),(.0,1.9,-74.0,-32.4,1.5),(2.1,1.2,-73.0,-33.8,3.2)]):
    vv=[];ff=[];steps=74
    for i in range(steps+1):
     t=i/steps;z=top+(bottom-top)*t
     x=cx+.28*math.sin(t*9+phase)+.18*math.sin(t*23+phase)
     fall_t=max(0,min(1,(z-lip_z)/(bottom-lip_z)))
-    w=width*(.62+.12*math.sin(t*17+phase)+.72*fall_t)
+    w=width*(.82+.12*math.sin(t*17+phase)+.72*fall_t)
     if z<lip_z:
      upstream_t=max(0,min(1,(z-top)/(lip_z-top)))
      y=source_y+(lip_y-source_y)*upstream_t
@@ -107,15 +107,15 @@ def build_landscape(c,mapid):
    c['emit']([tuple(c['V'](v)) for v in vv],ff,cascade,uv=[(j/4,i/steps) for i in range(steps+1) for j in range(5)],smooth=True)
   # A broad wet shelf makes the source read as a mountain ledge instead of a
   # rectangular cut in the air. The falling sheets pass over its front edge.
-  box('Waterfall wet cliff lip',(0,13.15,-46.9),(8.4,1.6,2.8),slate,bevel=.22)
-  box('Waterfall left shoulder',(-4.25,10.6,-46.7),(2.0,5.0,3.6),slate,bevel=.24)
-  box('Waterfall right shoulder',(4.25,10.6,-46.7),(2.0,5.0,3.6),slate,bevel=.24)
+  box('Waterfall wet cliff lip',(0,13.15,-46.9),(12.5,1.6,2.8),slate,bevel=.22)
+  box('Waterfall left shoulder',(-6.3,10.6,-46.7),(2.4,5.0,3.6),slate,bevel=.24)
+  box('Waterfall right shoulder',(6.3,10.6,-46.7),(2.4,5.0,3.6),slate,bevel=.24)
   # A jagged headwall hides the upstream section inside the mountain. The
   # stream becomes visible only after it crosses this face, so its source is
   # visibly attached to rock instead of starting as a free vertical plane.
-  cliff_x=[-9,-7,-5,-3,0,3,5,7,9]
-  cliff_top=[18,25,30,32,31,32,30,25,18]
-  cliff_front=-49.35;cliff_back=-51.0;cliff_bottom=-.75
+  cliff_x=[-13,-10,-7,-4,0,4,7,10,13]
+  cliff_top=[24,34,40,43,42,43,40,34,24]
+  cliff_front=-62.5;cliff_back=-64.2;cliff_bottom=-.75
   cliff_v=[];cliff_f=[]
   for z in [cliff_front,cliff_back]:
    for x,top_y in zip(cliff_x,cliff_top):cliff_v += [(x,cliff_bottom,z),(x,top_y,z)]

@@ -408,18 +408,19 @@ def build_landscape(c,mapid):
  occupied=[(x,z,r) for x,z,r in reserved]
  def clear_of_props(x,z,radius):
   return all(math.hypot(x-px,z-pz) >= radius+pr for px,pz,pr in occupied)
- def allowed(x,z,margin=4):
+ def allowed(x,z,margin=4,ignore_reserved=False):
   if c['near_route'](x,z,route)<margin:return False
   if min(math.hypot(x-s['position'][0],z-s['position'][2]) for s in spots)<3.1:return False
-  if any(math.hypot(x-a,z-b)<r for a,b,r in reserved):return False
+  if not ignore_reserved and any(math.hypot(x-a,z-b)<r for a,b,r in reserved):return False
   if min(math.hypot(x-route[k][0],z-route[k][2]) for k in [0,-1])<8:return False
   # The central cascade is a visible landmark; keep every instanced rock and
   # tree outside its water channel so nothing appears to float in the fall.
   if ice and -50<z<-30 and river_distance(x,z)<4.8:return False
   return height(x,z)>(-.75 if ice else -1.0)
- def add_snow_rock(x,z,sc):
+ def add_snow_rock(x,z,sc,margin=7.5,ignore_reserved=False):
   clearance=max(1.0,sc*.80)
-  if not allowed(x,z,7.5) or not clear_of_props(x,z,clearance):return False
+  blockers=occupied[len(reserved):] if ignore_reserved else occupied
+  if not allowed(x,z,margin,ignore_reserved) or not all(math.hypot(x-px,z-pz)>=clearance+pr for px,pz,pr in blockers):return False
   meta['instances'].append({'key':'prop_snowrock_'+str(random.randrange(3)),'position':[x,height(x,z)-.15,z],'scale':[sc*random.uniform(.7,1.7),sc*random.uniform(.7,1.7),sc*random.uniform(.8,1.4)],'yaw':random.uniform(0,math.tau)})
   occupied.append((x,z,clearance));return True
  if ice:
@@ -487,6 +488,20 @@ def build_landscape(c,mapid):
   if not ice and sc>1.7:
    tube('Charred crooked tree',(x,height(x,z),z),(x+.3,height(x,z)+3.2,z-.2),.13,wood,r2=.025)
    tube('Broken limb',(x+.2,height(x,z)+1.8,z),(x+1.1,height(x,z)+2.4,z+.4),.06,wood,r2=.01)
+ if ice:
+  # Extra snow rocks for the open pockets marked on the map preview. They
+  # use a narrower road margin than the general scatter, ignore only the
+  # broad reserved clearing radius, and still respect every real prop.
+  target_keepouts=[(-52,0,8),(-40,18,3.6),(-39,-28,4.0),(-47,-25,2.8),(-42,-23,2.4),(-45,-30,2.4),(-5.8,15,3.4),(5.8,15,3.4)]
+  target_zones=[(-20,-44,4.2,4),(22,-41.5,4.2,4),(-52,12.5,4.0,4),(-45.5,22,4.2,4),(-37.5,12,4.0,4),(-36,21.5,4.0,4),(-10.5,9.5,4.0,3)]
+  for cx,cz,radius,count in target_zones:
+   placed=0
+   for _ in range(count*30):
+    if placed>=count:break
+    a=random.uniform(0,math.tau);rr=radius*math.sqrt(random.random());x=cx+math.cos(a)*rr;z=cz+math.sin(a)*rr;sc=random.uniform(.65,1.55)
+    clearance=max(1.0,sc*.80)
+    if any(math.hypot(x-kx,z-kz)<kr+clearance for kx,kz,kr in target_keepouts):continue
+    if add_snow_rock(x,z,sc,margin=3.8,ignore_reserved=True):placed+=1
  c['FAST_WORLD']=False;c['flush_world']();c['export']('world_'+mapid)
  path=c['R']/'data/landscapes.json';existing=json.loads(path.read_text()) if path.exists() else {};existing[mapid]=meta
  path.write_text(json.dumps(existing,ensure_ascii=False,indent=2)+'\n')

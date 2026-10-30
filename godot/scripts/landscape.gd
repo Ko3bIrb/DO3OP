@@ -31,6 +31,10 @@ func configure(scene: Node3D, id: String) -> void:
     var water = ShaderMaterial.new()
     water.shader = preload("res://shaders/waterfall.gdshader") if mode==1 else preload("res://shaders/landscape.gdshader")
     water.set_shader_parameter("mode",mode)
+    if mode==1:
+     # The waterfall is a foreground layer over the mountain face. Let its
+     # alpha surface render after the terrain without changing the terrain mesh.
+     water.render_priority = 10
     _materials[mode] = water
    part.set_surface_override_material(index,_materials[mode])
  var groups: Dictionary = {}

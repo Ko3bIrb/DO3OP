@@ -99,9 +99,8 @@ def build_landscape(c,mapid):
      y=source_y+(lip_y-source_y)*upstream_t
     else:
      y=lip_y+(-.75-lip_y)*fall_t**1.18
-    draw_z=z+5.0 if z<lip_z else z
     for j in range(5):
-     u=j/4;vv.append((x+(u*2-1)*w,y+.15+.12*math.sin(t*29+u*8+phase),draw_z))
+     u=j/4;vv.append((x+(u*2-1)*w,y+.15+.12*math.sin(t*29+u*8+phase),z))
    for i in range(steps):
     for j in range(4):
      k=i*5+j;ff.append((k,k+5,k+6,k+1))

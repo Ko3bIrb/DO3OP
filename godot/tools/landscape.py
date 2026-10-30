@@ -489,6 +489,27 @@ def build_landscape(c,mapid):
    tube('Charred crooked tree',(x,height(x,z),z),(x+.3,height(x,z)+3.2,z-.2),.13,wood,r2=.025)
    tube('Broken limb',(x+.2,height(x,z)+1.8,z),(x+1.1,height(x,z)+2.4,z+.4),.06,wood,r2=.01)
  if ice:
+  # Landmark pockets from the map markup. Pick a free point inside each
+  # pocket after the normal scatter has been generated, so these decorations
+  # never displace or delete an existing tree, rock, or building.
+  special_keepouts=[(-52,0,8),(-40,18,3.6),(-39,-28,4.0),(-47,-25,2.8),(-42,-23,2.4),(-45,-30,2.4),(-5.8,15,3.4),(5.8,15,3.4),(27,27,2.0)]
+  special_rng=random.Random(5082)
+  def free_special(center,radius,clearance,margin):
+   cx,cz=center
+   for _ in range(80):
+    a=special_rng.uniform(0,math.tau);rr=radius*math.sqrt(special_rng.random());x=cx+math.cos(a)*rr;z=cz+math.sin(a)*rr
+    if not allowed(x,z,margin,True):continue
+    if any(math.hypot(x-kx,z-kz)<kr+clearance for kx,kz,kr in special_keepouts):continue
+    if not all(math.hypot(x-px,z-pz)>=clearance+pr for px,pz,pr in occupied[len(reserved):]):continue
+    return x,z
+   return None
+  mine_at=free_special((49.5,-81.0),5.0,4.0,3.8)
+  if mine_at:
+   frozen_mine(mine_at[0],mine_at[1],1.55);occupied.append((mine_at[0],mine_at[1],4.0));meta.setdefault('special_landmarks',[]).append({'kind':'mine','position':[mine_at[0],height(mine_at[0],mine_at[1]),mine_at[1]]})
+  for center,site_scale,clearance in [((23,20.5),.90,3.4),((29.5,30.5),1.15,4.6)]:
+   log_at=free_special(center,4.2,clearance,3.8)
+   if log_at:
+    logging_site(log_at[0],log_at[1],site_scale);occupied.append((log_at[0],log_at[1],clearance));meta.setdefault('special_landmarks',[]).append({'kind':'felled_trees','position':[log_at[0],height(log_at[0],log_at[1]),log_at[1]]})
   # Extra snow rocks for the open pockets marked on the map preview. They
   # use a narrower road margin than the general scatter, ignore only the
   # broad reserved clearing radius, and still respect every real prop.

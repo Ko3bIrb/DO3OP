@@ -134,6 +134,18 @@ def build_landscape(c,mapid):
   for j in range(4):
    k=i*5+j;ff.append((k,k+5,k+6,k+1))
  mesh('Worn connected causeway',vv,ff,roadmat,smooth=True)
+ # A continuous, uneven snow blanket makes the route legible from the full
+ # game camera while leaving its width and bends readable for the enemies.
+ snow_v=[]
+ for i,p in enumerate(samples):
+  tangent=(samples[min(i+1,len(samples)-1)]-samples[max(0,i-1)]).normalized();normal=Vector((-tangent.z,0,tangent.x))
+  for u in [-.96,-.35,.35,.96]:
+   snow_v.append(p+normal*1.69*u+Vector((0,.17+.025*math.sin(i*1.7+u*3),0)))
+ snow_f=[]
+ for i in range(len(samples)-1):
+  for j in range(3):
+   k=i*4+j;snow_f.append((k,k+4,k+5,k+1))
+ mesh('Snow covered route',snow_v,snow_f,snow,smooth=True)
  # Lanterns mark key bends; loose paving blocks along every segment created
  # the chain of dark route points visible from the game camera.
  for i in range(0,len(samples),42):
@@ -168,9 +180,68 @@ def build_landscape(c,mapid):
   box('Cottage door',(x,y+.72*scale,z+d+.035),(.65*scale,1.45*scale,.06),c['DARK'],bevel=.04)
   tube('Chimney',(x+w*.65,y+h,z-.7),(x+w*.65,y+h+2.1*scale,z-.7),.28,stone,verts=8)
   meta.setdefault('homes',[]).append([x,y+1,z])
+ def ruin(x,z,scale=1.0):
+  y=height(x,z)
+  for dx,dz,h in [(-1.5,0,2.8),(1.2,.35,1.7),(.1,1.35,2.2)]:
+   box('Broken ruin wall',(x+dx*scale,y+h*.5,z+dz*scale),(1.15*scale,h,.48*scale),stone,bevel=.08)
+  tube('Collapsed ruin beam',(x-1.6*scale,y+1.1*scale,z-.4*scale),(x+1.4*scale,y+.35*scale,z+.8*scale),.12*scale,wood,r2=.07*scale,verts=8)
+  c['ell']('Snow on ruin',(x+.1*scale,y+2.25*scale,z),(1.2*scale,.16*scale,.65*scale),snow,seg=12)
+ def gargoyle(x,z,scale=1.0):
+  y=height(x,z)
+  c['ell']('Snow gargoyle body',(x,y+1.15*scale,z),(.72*scale,1.15*scale,.56*scale),stone,seg=12)
+  c['ell']('Snow gargoyle head',(x,y+2.15*scale,z-.08*scale),(.48*scale,.42*scale,.42*scale),stone,seg=12)
+  for side in [-1,1]:
+   curve('Snow gargoyle wing',[(x+side*.35*scale,y+1.55*scale,z),(x+side*1.15*scale,y+2.05*scale,z+.12*scale),(x+side*1.45*scale,y+1.05*scale,z+.28*scale)],.11*scale,stone)
+   tube('Snow gargoyle claw',(x+side*.28*scale,y+.65*scale,z),(x+side*.58*scale,y+.18*scale,z-.25*scale),.08*scale,stone,r2=.035*scale,verts=6)
+  c['ell']('Gargoyle snow cap',(x,y+2.48*scale,z),( .52*scale,.10*scale,.40*scale),snow,seg=10)
+ def windmill(x,z,scale=1.0):
+  y=height(x,z)
+  box('Abandoned mill tower',(x,y+1.8*scale,z),(2.4*scale,3.6*scale,2.5*scale),wood,bevel=.10)
+  box('Mill dark doorway',(x,y+.85*scale,z-1.28*scale),(.62*scale,1.35*scale,.06),c['DARK'],bevel=.03)
+  roof=[(x-1.5*scale,y+3.6*scale,z-1.5*scale),(x+1.5*scale,y+3.6*scale,z-1.5*scale),(x,y+4.8*scale,z-1.5*scale),(x-1.5*scale,y+3.6*scale,z+1.5*scale),(x+1.5*scale,y+3.6*scale,z+1.5*scale),(x,y+4.8*scale,z+1.5*scale)]
+  mesh('Snow covered mill roof',roof,[(0,2,5,3),(2,1,4,5),(0,1,2),(3,5,4)],snow)
+  hub=Vector((x,y+2.55*scale,z-1.43*scale))
+  for angle in [0,math.pi*.5,math.pi,math.pi*1.5]:
+   end=hub+Vector((math.cos(angle)*1.65*scale,math.sin(angle)*1.65*scale,0))
+   tube('Stopped mill blade',hub,end,.075*scale,wood,r2=.035*scale,verts=6)
+  c['ell']('Mill axle',tuple(hub),(.18*scale,.18*scale,.10*scale),stone,seg=10)
+ def frozen_mine(x,z,scale=1.0):
+  y=height(x,z)
+  box('Frozen mine darkness',(x,y+1.05*scale,z),(2.5*scale,2.0*scale,.30*scale),c['EYE'],bevel=.10)
+  for side in [-1,1]:
+   tube('Mine timber support',(x+side*.9*scale,y+.15*scale,z-1.0*scale),(x+side*.9*scale,y+2.0*scale,z-1.0*scale),.14*scale,wood,r2=.10*scale,verts=8)
+  tube('Mine timber lintel',(x-.95*scale,y+2.0*scale,z-1.0*scale),(x+.95*scale,y+2.0*scale,z-1.0*scale),.16*scale,wood,r2=.11*scale,verts=8)
+  c['crystal']((x-1.3*scale,y+.35*scale,z+.15*scale),1.4*scale,c['ICE'])
+  c['crystal']((x+1.25*scale,y+.28*scale,z+.25*scale),1.0*scale,c['ICE'])
+  c['ell']('Mine snow bank',(x,y+.15*scale,z+1.15*scale),(1.55*scale,.28*scale,.58*scale),snow,seg=14)
+ def logging_site(x,z,scale=1.0):
+  y=height(x,z)
+  # A dropped axe, boot prints, rough sawhorse and fresh-cut timber make the
+  # settlement feel inhabited even though the workers are gone.
+  tube('Dropped axe handle',(x,y+.10*scale,z),(x+.95*scale,y+.68*scale,z+.25*scale),.055*scale,wood,r2=.035*scale,verts=8)
+  box('Dropped axe head',(x+.98*scale,y+.72*scale,z+.26*scale),(.34*scale,.20*scale,.08*scale),c['DARK'],bevel=.03)
+  box('Small sawmill frame',(x+2.1*scale,y+.65*scale,z),(2.2*scale,1.2*scale,1.4*scale),wood,bevel=.06)
+  for side in [-1,1]:tube('Sawmill support',(x+(1.3+side*.7)*scale,y+.08*scale,z-1.0*scale),(x+(1.3+side*.7)*scale,y+1.55*scale,z-1.0*scale),.07*scale,wood,verts=8)
+  for i in range(6):
+   px=x+(.1+(i%3)*.7)*scale;pz=z+(.7+(i//3)*.65)*scale
+   box('Boot print',(px,y+.035*scale,pz),(.16*scale,.025*scale,.34*scale),c['DARK'],bevel=.02)
+  for i in range(4):
+   xx=x-1.4*scale+i*.42*scale
+   tube('Fallen tree log',(xx,y+.22*scale,z+2.0*scale),(xx+.25*scale,y+.36*scale,z+3.65*scale),.16*scale,wood,r2=.13*scale,verts=10)
+  c['ell']('Small timber pile',(x-1.0*scale,y+.55*scale,z+3.5*scale),(1.25*scale,.55*scale,.75*scale),wood,seg=12)
+  c['ell']('Snow on timber pile',(x-1.0*scale,y+1.02*scale,z+3.5*scale),(1.18*scale,.12*scale,.70*scale),snow,seg=12)
  # Human landmarks make the road's destination and defensive purpose legible.
  if ice:
-  camp(-32,1)
+  # The old camp was isolated on the left. Move the active-looking settlement
+  # up beside the allied fortress and give it a broken mill and a frozen mine.
+  camp(38,-24)
+  windmill(49,-24,.95)
+  frozen_mine(62,-40,1.05)
+  # The western shoulder keeps the history of the old pass: snow-buried ruins
+  # and two gargoyles watching the enemy gate.
+  for rx,rz,rs in [(-39,-28,1.25),(-23,-38,.9),(-40,18,1.05)]:ruin(rx,rz,rs)
+  for gx,gz in [(-43,-10),(-43,10)]:gargoyle(gx,gz,.95)
+  logging_site(24,7,1.0)
   for x,z,sc in [(31,6,.75),(36,10,1.05),(41,7,.9),(45,13,.65),(32,14,.65)]:house(x,z,sc)
   # Stone crossing extends into both banks; paving disappears below the abutments.
   for x in [-5.8,5.8]:
@@ -249,7 +320,9 @@ def build_landscape(c,mapid):
  # Clustered, varied vegetation/stone props, instanced by the runtime. Keep
  # landmark clearings reserved so foliage and rocks never grow through them.
  reserved=[
-  (-32,1,7), (31,6,5), (36,10,6), (41,7,5), (45,13,5), (32,14,5),
+  (38,-24,8), (49,-24,6), (62,-40,8), (24,7,8),
+  (-39,-28,6), (-23,-38,5), (-40,18,6), (-43,-10,5), (-43,10,5),
+  (31,6,5), (36,10,6), (41,7,5), (45,13,5), (32,14,5),
   (-6,15,8), (0,-20,4), (-5,-4,5), (route[0][0],route[0][2],14),
   (route[-1][0],route[-1][2],14)
  ] if ice else [(36,10,10),(-5,3,7),(route[0][0],route[0][2],14),(route[-1][0],route[-1][2],14)]

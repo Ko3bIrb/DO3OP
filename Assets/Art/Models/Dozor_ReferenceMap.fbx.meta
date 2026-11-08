@@ -1,0 +1,34 @@
+fileFormatVersion: 2
+guid: 0f5e8b2e6a9a4d7cb7a2f3e1c4d5e6f7
+ModelImporter:
+  serializedVersion: 22200
+  fileIDToRecycleName: {}
+  externalObjects: {}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    importAnimation: 0
+  meshes:
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    useSRGBMaterial: 1
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 0
+  tangentSpace:
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+  platformSettings: []
+  isReadable: 0
+  assetBundleName: 
+  assetBundleVariant: 
